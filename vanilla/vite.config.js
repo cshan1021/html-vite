@@ -21,6 +21,7 @@ const htmlEntries = Object.fromEntries(
 
 export default defineConfig({
   root: 'src',
+  envDir: import.meta.dirname,
   plugins: [
     nunjucks()
   ],

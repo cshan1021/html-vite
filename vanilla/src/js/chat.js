@@ -3,7 +3,6 @@ const input = document.querySelector('#chatInput')
 const messages = document.querySelector('#chatMessages')
 const submitButton = form?.querySelector('button[type="submit"]')
 const viteApiUrl = import.meta.env.VITE_API_URL
-alert(import.meta.env.VITE_API_URL)
 const xSessionId = globalThis.crypto?.randomUUID?.() ?? `chat-${Date.now()}`
 
 function addMessage(text, type) {
