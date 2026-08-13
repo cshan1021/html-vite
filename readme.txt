@@ -9,7 +9,7 @@ cd vanilla
 npm install
 npm run dev
 
-# nunjucks 설정
+# vite-plugin-nunjucks 설정
 npm install -D vite-plugin-nunjucks
 
 //vite.config.js
@@ -17,9 +17,12 @@ import { defineConfig } from 'vite'
 import nunjucks from 'vite-plugin-nunjucks'
 
 export default defineConfig({
+  root: 'src',
   plugins: [
-    nunjucks({
-      templatesDir: 'src'
-    })
-  ]
+    nunjucks()
+  ],
+  build: {
+    outDir: '../dist',
+    emptyOutDir: true
+  }
 })
