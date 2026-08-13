@@ -1,6 +1,10 @@
 const form = document.querySelector('#chatForm')
 const input = document.querySelector('#chatInput')
 const messages = document.querySelector('#chatMessages')
+const submitButton = form?.querySelector('button[type="submit"]')
+const viteApiUrl = import.meta.env.VITE_API_URL
+alert(import.meta.env.VITE_API_URL)
+const xSessionId = globalThis.crypto?.randomUUID?.() ?? `chat-${Date.now()}`
 
 function addMessage(text, type) {
   const bubble = document.createElement('div')
@@ -10,17 +14,48 @@ function addMessage(text, type) {
   messages.scrollTop = messages.scrollHeight
 }
 
-form?.addEventListener('submit', (event) => {
+function setLoadingState(isLoading) {
+  if (!submitButton) return
+
+  submitButton.disabled = isLoading
+  submitButton.textContent = isLoading ? '전송 중...' : '전송'
+}
+
+form?.addEventListener('submit', async (event) => {
   event.preventDefault()
 
   const message = input.value.trim()
-  if (!message) return
+  if (!message || submitButton?.disabled) return
 
   addMessage(message, 'user')
   input.value = ''
+  setLoadingState(true)
 
-  // 실제 AI API 연결 전까지 화면 동작을 확인할 수 있는 임시 응답입니다.
-  setTimeout(() => {
-    addMessage(`요청하신 내용을 확인했습니다: ${message}`, 'ai')
-  }, 400)
+  try {
+    const response = await fetch(`${viteApiUrl}/api/v1/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Session-ID': xSessionId
+      },
+      body: JSON.stringify({ message })
+    })
+
+    const result = await response.json().catch(() => null)
+
+    if (!response.ok) {
+      throw new Error(result?.message || 'AI 서버 응답을 받지 못했습니다.')
+    }
+
+    const content = result?.data?.content || '응답을 받지 못했습니다.'
+    addMessage(content, 'ai')
+  } catch (error) {
+    addMessage(
+      error instanceof Error ? error.message : 'AI 응답 처리 중 오류가 발생했습니다.',
+      'ai'
+    )
+  } finally {
+    setLoadingState(false)
+    input.focus()
+  }
 })
