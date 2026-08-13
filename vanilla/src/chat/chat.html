@@ -1,18 +1,28 @@
 {% extends "src/layouts/base.html" %}
 
-{% block title %}메인 - SERVICE{% endblock %}
-
-{% block head %}
-  <!-- 메인 페이지 전용 CSS가 필요한 경우 여기에 작성 -->
-{% endblock %}
+{% block title %}AI Chat - Task Board{% endblock %}
 
 {% block content %}
-<div>
-  ai chat
+<div class="page-title">
+  <h1>AI Chat</h1>
+  <p>AI에게 메시지를 보내고 현재 대화 응답을 확인합니다.</p>
 </div>
+
+<section class="panel chat-shell d-flex flex-column">
+  <div id="chatMessages" class="chat-messages flex-fill p-4">
+    <div class="chat-bubble ai mb-3">
+      안녕하세요. 작업 상태나 데이터 처리에 대해 질문해 주세요.
+    </div>
+  </div>
+  <form id="chatForm" class="border-top p-3">
+    <div class="input-group">
+      <input id="chatInput" class="form-control" type="text" placeholder="메시지를 입력하세요" autocomplete="off">
+      <button class="btn btn-primary" type="submit">전송</button>
+    </div>
+  </form>
+</section>
 {% endblock %}
 
 {% block scripts %}
-    <!-- 자바스크립트 작성 -->
   <script type="module" src="/js/chat.js"></script>
 {% endblock %}

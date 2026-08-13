@@ -1,17 +1,16 @@
 {% extends "src/layouts/base.html" %}
 
-{% block title %}메인 - SERVICE{% endblock %}
-
-{% block head %}
-  <!-- 메인 페이지 전용 CSS가 필요한 경우 여기에 작성 -->
-{% endblock %}
+{% block title %}홈 - Task Board{% endblock %}
 
 {% block content %}
-<div>
-  index
-</div>
-{% endblock %}
-
-{% block scripts %}
-  <!-- 자바스크립트 작성 -->
+<section class="panel p-4">
+  <div class="page-title">
+    <h1>작업 관리 서비스</h1>
+    <p>작업 진행 상태를 조회하고 AI Chat으로 간단한 질문을 보낼 수 있습니다.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-primary" href="/board/list.html">작업 목록 보기</a>
+    <a class="btn btn-outline-secondary" href="/chat/chat.html">AI Chat 열기</a>
+  </div>
+</section>
 {% endblock %}

@@ -1,17 +1,98 @@
 {% extends "src/layouts/base.html" %}
 
-{% block title %}메인 - SERVICE{% endblock %}
-
-{% block head %}
-  <!-- 메인 페이지 전용 CSS가 필요한 경우 여기에 작성 -->
-{% endblock %}
+{% block title %}작업 목록 - Task Board{% endblock %}
 
 {% block content %}
-<div>
-  board 에 대한 리스트화면
+<div class="page-title">
+  <h1>작업 목록</h1>
+  <p>작업 ID, 유형, 상태, 기간 조건으로 작업 진행 현황을 검색합니다.</p>
 </div>
-{% endblock %}
 
-{% block scripts %}
-  <!-- 자바스크립트 작성 -->
+<section class="panel p-4 mb-4">
+  <form class="row g-3">
+    <div class="col-md-3">
+      <label class="form-label" for="taskId">작업 ID</label>
+      <input id="taskId" class="form-control" type="text" placeholder="TASK-20260813-001">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label" for="taskType">작업 유형</label>
+      <select id="taskType" class="form-select">
+        <option value="">전체</option>
+        <option>IMPORT</option>
+        <option>EXPORT</option>
+        <option>CHAT</option>
+        <option>BATCH</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="status">상태</label>
+      <select id="status" class="form-select">
+        <option value="">전체</option>
+        <option>READY</option>
+        <option>RUNNING</option>
+        <option>DONE</option>
+        <option>FAILED</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="fromDate">시작일</label>
+      <input id="fromDate" class="form-control" type="date">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="toDate">종료일</label>
+      <input id="toDate" class="form-control" type="date">
+    </div>
+    <div class="col-12 d-flex justify-content-end gap-2">
+      <button class="btn btn-outline-secondary" type="reset">초기화</button>
+      <button class="btn btn-primary" type="submit">검색</button>
+    </div>
+  </form>
+</section>
+
+<section class="panel">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">No</th>
+          <th scope="col">작업 ID</th>
+          <th scope="col">유형</th>
+          <th scope="col">데이터 키</th>
+          <th scope="col">상태</th>
+          <th scope="col">진행률</th>
+          <th scope="col">수정 일시</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr onclick="location.href='/board/detail.html'" role="button">
+          <td>3</td>
+          <td class="fw-semibold">TASK-20260813-003</td>
+          <td>CHAT</td>
+          <td>room-demo</td>
+          <td><span class="badge text-bg-primary">RUNNING</span></td>
+          <td><div class="progress" style="height: 8px;"><div class="progress-bar" style="width: 65%"></div></div></td>
+          <td>2026-08-13 14:20</td>
+        </tr>
+        <tr onclick="location.href='/board/detail.html'" role="button">
+          <td>2</td>
+          <td class="fw-semibold">TASK-20260813-002</td>
+          <td>EXPORT</td>
+          <td>report-2026</td>
+          <td><span class="badge text-bg-success">DONE</span></td>
+          <td><div class="progress" style="height: 8px;"><div class="progress-bar bg-success" style="width: 100%"></div></div></td>
+          <td>2026-08-13 13:40</td>
+        </tr>
+        <tr onclick="location.href='/board/detail.html'" role="button">
+          <td>1</td>
+          <td class="fw-semibold">TASK-20260813-001</td>
+          <td>IMPORT</td>
+          <td>customer.csv</td>
+          <td><span class="badge text-bg-warning">READY</span></td>
+          <td><div class="progress" style="height: 8px;"><div class="progress-bar bg-warning" style="width: 0%"></div></div></td>
+          <td>2026-08-13 12:05</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 {% endblock %}

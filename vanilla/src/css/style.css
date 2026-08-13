@@ -1,0 +1,132 @@
+body {
+  min-width: 320px;
+  background: #f5f7fb;
+  color: #1f2937;
+}
+
+.app-header {
+  background: #1f2937;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.app-container {
+  width: min(1280px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.app-header .app-container {
+  min-height: 64px;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 24px;
+  padding: 32px 0 48px;
+}
+
+.app-sidebar {
+  min-height: calc(100vh - 128px);
+  padding: 20px 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.sidebar-title {
+  padding: 0 10px 12px;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 10px 12px;
+  color: #374151;
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+.sidebar-nav a:hover {
+  background: #eef2ff;
+  color: #0d6efd;
+}
+
+#main-content {
+  min-width: 0;
+}
+
+.page-title {
+  margin-bottom: 20px;
+}
+
+.page-title h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.page-title p {
+  margin: 6px 0 0;
+  color: #6b7280;
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.chat-shell {
+  height: 620px;
+}
+
+.chat-messages {
+  min-height: 0;
+  overflow-y: auto;
+  background: #f8fafc;
+}
+
+.chat-bubble {
+  max-width: 78%;
+  padding: 12px 14px;
+  border-radius: 8px;
+}
+
+.chat-bubble.user {
+  margin-left: auto;
+  background: #0d6efd;
+  color: #fff;
+}
+
+.chat-bubble.ai {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .app-sidebar {
+    min-height: auto;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
