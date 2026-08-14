@@ -28,9 +28,9 @@
       <label class="form-label" for="status">상태</label>
       <select id="status" class="form-select">
         <option value="">전체</option>
-        <option>READY</option>
-        <option>RUNNING</option>
-        <option>DONE</option>
+        <option>PENDING</option>
+        <option>PROGRESS</option>
+        <option>COMPLETED</option>
         <option>FAILED</option>
       </select>
     </div>
@@ -64,35 +64,109 @@
         </tr>
       </thead>
       <tbody>
-        <tr onclick="location.href='/board/detail.html'" role="button">
-          <td>3</td>
-          <td class="fw-semibold">TASK-20260813-003</td>
-          <td>CHAT</td>
-          <td>room-demo</td>
-          <td><span class="badge text-bg-primary">RUNNING</span></td>
-          <td><div class="progress" style="height: 8px;"><div class="progress-bar" style="width: 65%"></div></div></td>
-          <td>2026-08-13 14:20</td>
-        </tr>
-        <tr onclick="location.href='/board/detail.html'" role="button">
-          <td>2</td>
-          <td class="fw-semibold">TASK-20260813-002</td>
-          <td>EXPORT</td>
-          <td>report-2026</td>
-          <td><span class="badge text-bg-success">DONE</span></td>
-          <td><div class="progress" style="height: 8px;"><div class="progress-bar bg-success" style="width: 100%"></div></div></td>
-          <td>2026-08-13 13:40</td>
-        </tr>
-        <tr onclick="location.href='/board/detail.html'" role="button">
-          <td>1</td>
-          <td class="fw-semibold">TASK-20260813-001</td>
-          <td>IMPORT</td>
-          <td>customer.csv</td>
-          <td><span class="badge text-bg-warning">READY</span></td>
-          <td><div class="progress" style="height: 8px;"><div class="progress-bar bg-warning" style="width: 0%"></div></div></td>
-          <td>2026-08-13 12:05</td>
-        </tr>
+        <tr><td colspan="7" class="text-center">검색 결과가 없습니다.</td></tr>
       </tbody>
     </table>
   </div>
 </section>
+
+<script type="module">
+const viteApiUrl = import.meta.env.VITE_API_URL + '/api/v1/tasks';
+
+const form = document.querySelector('form');
+const tbody = document.querySelector('table tbody');
+
+function buildQuery() {
+  const params = new URLSearchParams();
+  const taskId = document.getElementById('taskId').value.trim();
+  const taskType = document.getElementById('taskType').value;
+  const status = document.getElementById('status').value;
+  const fromDate = document.getElementById('fromDate').value;
+  const toDate = document.getElementById('toDate').value;
+  if (taskId) params.append('task_id', taskId);
+  if (taskType) params.append('task_type', taskType);
+  if (status) params.append('status', status);
+  if (fromDate) params.append('from_date', fromDate);
+  if (toDate) params.append('to_date', toDate);
+  // basic pagination defaults (matches Pagination struct)
+  params.append('page', '1');
+  params.append('limit', '10');
+  return params.toString();
+}
+
+async function fetchTasks() {
+  const q = buildQuery();
+  const url = q ? `${viteApiUrl}?${q}` : viteApiUrl;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const resp = await res.json();
+    // backend returns { success: true, data: { items: [...], total, page, limit } }
+    const payload = (resp && typeof resp === 'object' && 'data' in resp) ? resp.data : resp;
+    const items = payload.items || payload.tasks || payload;
+    const total = payload.total ?? payload.count ?? (Array.isArray(items) ? items.length : 0);
+    const page = payload.page ?? 1;
+    const limit = payload.limit ?? payload.limit ?? 10;
+    renderTasks(items, { total, page, limit });
+  } catch (err) {
+    console.error('fetchTasks error', err);
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>';
+  }
+}
+
+function renderTasks(items, meta = {}) {
+  tbody.innerHTML = '';
+  if (!items || items.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center">검색 결과가 없습니다.</td></tr>';
+    return;
+  }
+  items.forEach((t, idx) => {
+    const tr = document.createElement('tr');
+    tr.setAttribute('role', 'button');
+    tr.addEventListener('click', () => {
+      const rawId = t.id ?? t.ID ?? t.task_id ?? t.taskId ?? '';
+      const id = encodeURIComponent(String(rawId));
+      location.href = `/board/detail.html?id=${id}`;
+    });
+    // Expecting TaskResponse shape
+    const status = t.status || '';
+    const progress = Number.isFinite(t.progress) ? t.progress : (t.progress ?? 0);
+    const updated = t.updated_at || t.created_at || '';
+    const dataKey = t.data_key || '';
+    tr.innerHTML = `
+      <td>${idx + 1}</td>
+      <td class="fw-semibold">${t.task_id || ''}</td>
+      <td>${t.task_type || ''}</td>
+      <td>${dataKey}</td>
+      <td><span class="badge ${badgeClass(status)}">${status}</span></td>
+      <td><div class="progress" style="height: 8px;"><div class="progress-bar ${progressClass(status)}" style="width: ${progress}%"></div></div></td>
+      <td>${updated}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function badgeClass(status) {
+  if (!status) return 'text-bg-secondary';
+  if (status === 'RUNNING') return 'text-bg-primary';
+  if (status === 'DONE') return 'text-bg-success';
+  if (status === 'READY') return 'text-bg-warning';
+  if (status === 'FAILED') return 'text-bg-danger';
+  return 'text-bg-secondary';
+}
+
+function progressClass(status) {
+  if (status === 'DONE') return 'bg-success';
+  if (status === 'READY') return 'bg-warning';
+  if (status === 'FAILED') return 'bg-danger';
+  return '';
+}
+
+form.addEventListener('submit', (e) => { e.preventDefault(); fetchTasks(); });
+form.addEventListener('reset', () => { setTimeout(fetchTasks, 0); });
+
+// initial load
+fetchTasks();
+</script>
+
 {% endblock %}

@@ -15,23 +15,23 @@
   <div class="row g-4">
     <div class="col-md-3">
       <div class="text-secondary small">작업 ID</div>
-      <div class="fw-semibold">TASK-20260813-003</div>
+      <div id="taskIdText" class="fw-semibold">-</div>
     </div>
     <div class="col-md-3">
       <div class="text-secondary small">작업 유형</div>
-      <div>CHAT</div>
+      <div id="taskTypeText">-</div>
     </div>
     <div class="col-md-3">
       <div class="text-secondary small">데이터 키</div>
-      <div>room-demo</div>
+      <div id="dataKeyText">-</div>
     </div>
     <div class="col-md-3">
       <div class="text-secondary small">현재 상태</div>
-      <span class="badge text-bg-primary">RUNNING</span>
+      <span id="statusBadge" class="badge text-bg-secondary">-</span>
     </div>
     <div class="col-12">
       <div class="text-secondary small mb-2">진행률</div>
-      <div class="progress" style="height: 12px;"><div class="progress-bar" style="width: 65%">65%</div></div>
+      <div class="progress" style="height: 12px;"><div id="progressBar" class="progress-bar" style="width: 0%">0%</div></div>
     </div>
   </div>
 </section>
@@ -51,23 +51,97 @@
           <th scope="col">생성 일시</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
-          <td>prepare</td>
-          <td><span class="badge text-bg-success">DONE</span></td>
-          <td>20%</td>
-          <td>요청 파라미터 검증 완료</td>
-          <td>2026-08-13 14:10</td>
-        </tr>
-        <tr>
-          <td>execute</td>
-          <td><span class="badge text-bg-primary">RUNNING</span></td>
-          <td>65%</td>
-          <td>AI 응답 생성 중</td>
-          <td>2026-08-13 14:20</td>
-        </tr>
+      <tbody id="statusTbody">
       </tbody>
     </table>
   </div>
 </section>
+<script type="module">
+const viteApiUrl = import.meta.env.VITE_API_URL + '/api/v1/tasks/';
+
+function badgeClass(status) {
+  if (!status) return 'text-bg-secondary';
+  if (status === 'RUNNING' || status === 'IN_PROGRESS') return 'text-bg-primary';
+  if (status === 'COMPLETED' || status === 'DONE') return 'text-bg-success';
+  if (status === 'PENDING' || status === 'READY') return 'text-bg-warning';
+  if (status === 'FAILED') return 'text-bg-danger';
+  return 'text-bg-secondary';
+}
+
+function progressClass(status) {
+  if (status === 'COMPLETED' || status === 'DONE') return 'bg-success';
+  if (status === 'PENDING' || status === 'READY') return 'bg-warning';
+  if (status === 'FAILED') return 'bg-danger';
+  return '';
+}
+
+function parseQuery() {
+  const ps = new URLSearchParams(location.search);
+  return ps.get('task_id') || ps.get('id') || '';
+}
+
+async function fetchDetail() {
+  const taskId = parseQuery();
+  if (!taskId) {
+    console.error('no task id provided in query');
+    return;
+  }
+  const url = viteApiUrl + encodeURIComponent(taskId);
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const resp = await res.json();
+    const payload = (resp && typeof resp === 'object' && 'data' in resp) ? resp.data : resp;
+    renderDetail(payload);
+  } catch (err) {
+    console.error('fetchDetail error', err);
+  }
+}
+
+function renderDetail(d) {
+  if (!d) return;
+  document.getElementById('taskIdText').textContent = d.task_id || d.taskId || '';
+  document.getElementById('taskTypeText').textContent = d.task_type || d.taskType || '';
+  document.getElementById('dataKeyText').textContent = d.data_key || d.dataKey || '';
+  const status = d.status || d.task_status || '';
+  const badge = document.getElementById('statusBadge');
+  badge.textContent = status;
+  badge.className = 'badge ' + badgeClass(status);
+  const progress = Number.isFinite(d.progress) ? d.progress : (d.progress ?? 0);
+  const pbar = document.getElementById('progressBar');
+  pbar.style.width = `${progress}%`;
+  pbar.textContent = `${progress}%`;
+
+  const tbody = document.getElementById('statusTbody');
+  tbody.innerHTML = '';
+  const statuses = d.task_statuses || d.statuses || [];
+  if (!Array.isArray(statuses) || statuses.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center">상태 이력이 없습니다.</td></tr>';
+    return;
+  }
+  statuses.forEach(s => {
+    const tr = document.createElement('tr');
+    const step = s.step || '';
+    const st = s.status || '';
+    const prog = Number.isFinite(s.progress) ? s.progress : (s.progress ?? 0);
+    const msg = s.message || '';
+    const created = s.created_at || s.updated_at || '';
+    tr.innerHTML = `
+      <td>${step}</td>
+      <td><span class="badge ${badgeClass(st)}">${st}</span></td>
+      <td>${prog}%</td>
+      <td>${escapeHtml(msg)}</td>
+      <td>${created}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m];});
+}
+
+fetchDetail();
+</script>
 {% endblock %}
