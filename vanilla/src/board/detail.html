@@ -8,7 +8,7 @@
     <h1>작업 상세</h1>
     <p>TASK-20260813-003 작업의 기본 정보와 상태 이력을 확인합니다.</p>
   </div>
-  <a class="btn btn-outline-secondary" href="/board/list.html">목록</a>
+  <a id="backButton" class="btn btn-outline-secondary" href="/board/list.html">목록</a>
 </div>
 
 <section class="panel p-4 mb-4">
@@ -58,6 +58,17 @@
 </section>
 <script type="module">
 const viteApiUrl = import.meta.env.VITE_API_URL + '/api/v1/tasks/';
+
+// restore list filters when returning
+const backParam = new URLSearchParams(location.search).get('back');
+const backBtn = document.getElementById('backButton');
+if (backBtn) {
+  try {
+    backBtn.href = backParam ? ('/board/list.html' + decodeURIComponent(backParam)) : '/board/list.html';
+  } catch (e) {
+    backBtn.href = '/board/list.html';
+  }
+}
 
 function badgeClass(status) {
   if (!status) return 'text-bg-secondary';

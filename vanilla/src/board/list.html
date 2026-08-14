@@ -76,6 +76,30 @@ const viteApiUrl = import.meta.env.VITE_API_URL + '/api/v1/tasks';
 const form = document.querySelector('form');
 const tbody = document.querySelector('table tbody');
 
+// parse URL search params on load to prefill form and use page/limit
+let initialParams = {};
+function parseLocationParams() {
+  const ps = new URLSearchParams(location.search);
+  const out = {};
+  if (ps.has('task_id')) out.task_id = ps.get('task_id');
+  if (ps.has('task_type')) out.task_type = ps.get('task_type');
+  if (ps.has('status')) out.status = ps.get('status');
+  if (ps.has('from_date')) out.from_date = ps.get('from_date');
+  if (ps.has('to_date')) out.to_date = ps.get('to_date');
+  if (ps.has('page')) out.page = ps.get('page');
+  if (ps.has('limit')) out.limit = ps.get('limit');
+  return out;
+}
+
+function applyQueryToForm(params) {
+  if (!params) return;
+  if (params.task_id) document.getElementById('taskId').value = params.task_id;
+  if (params.task_type) document.getElementById('taskType').value = params.task_type;
+  if (params.status) document.getElementById('status').value = params.status;
+  if (params.from_date) document.getElementById('fromDate').value = params.from_date;
+  if (params.to_date) document.getElementById('toDate').value = params.to_date;
+}
+
 function buildQuery() {
   const params = new URLSearchParams();
   const taskId = document.getElementById('taskId').value.trim();
@@ -89,8 +113,11 @@ function buildQuery() {
   if (fromDate) params.append('from_date', fromDate);
   if (toDate) params.append('to_date', toDate);
   // basic pagination defaults (matches Pagination struct)
-  params.append('page', '1');
-  params.append('limit', '10');
+  // page/limit come from URL if present, otherwise defaults
+  const page = initialParams.page ?? '1';
+  const limit = initialParams.limit ?? '10';
+  params.append('page', String(page));
+  params.append('limit', String(limit));
   return params.toString();
 }
 
@@ -126,7 +153,8 @@ function renderTasks(items, meta = {}) {
     tr.addEventListener('click', () => {
       const rawId = t.id ?? t.ID ?? t.task_id ?? t.taskId ?? '';
       const id = encodeURIComponent(String(rawId));
-      location.href = `/board/detail.html?id=${id}`;
+      const back = '?' + buildQuery();
+      location.href = `/board/detail.html?id=${id}&back=${encodeURIComponent(back)}`;
     });
     // Expecting TaskResponse shape
     const status = t.status || '';
@@ -166,6 +194,8 @@ form.addEventListener('submit', (e) => { e.preventDefault(); fetchTasks(); });
 form.addEventListener('reset', () => { setTimeout(fetchTasks, 0); });
 
 // initial load
+initialParams = parseLocationParams();
+applyQueryToForm(initialParams);
 fetchTasks();
 </script>
 
