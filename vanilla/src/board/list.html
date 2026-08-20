@@ -25,12 +25,12 @@
       </select>
     </div>
     <div class="col-md-3">
-      <label class="form-label" for="startDate">시작일</label>
-      <input id="startDate" class="form-control" type="date">
+      <label class="form-label" for="start_date">시작일</label>
+      <input id="start_date" class="form-control" type="date">
     </div>
     <div class="col-md-3">
-      <label class="form-label" for="endDate">종료일</label>
-      <input id="endDate" class="form-control" type="date">
+      <label class="form-label" for="end_date">종료일</label>
+      <input id="end_date" class="form-control" type="date">
     </div>
     <div class="col-12 d-flex justify-content-end gap-2">
       <button class="btn btn-outline-secondary" type="reset">초기화</button>
@@ -84,20 +84,20 @@ function applyQueryToForm(params) {
   if (!params) return;
   if (params.keyword) document.getElementById('keyword').value = params.keyword;
   if (params.status) document.getElementById('status').value = params.status;
-  if (params.start_date) document.getElementById('startDate').value = params.start_date;
-  if (params.end_date) document.getElementById('endDate').value = params.end_date;
+  if (params.start_date) document.getElementById('start_date').value = params.start_date;
+  if (params.end_date) document.getElementById('end_date').value = params.end_date;
 }
 
 function buildQuery() {
   const params = new URLSearchParams();
   const keyword = document.getElementById('keyword').value.trim();
   const status = document.getElementById('status').value;
-  const startDate = document.getElementById('startDate').value;
-  const endDate = document.getElementById('endDate').value;
+  const start_date = document.getElementById('start_date').value;
+  const end_date = document.getElementById('end_date').value;
   if (keyword) params.append('keyword', keyword);
   if (status) params.append('status', status);
-  if (startDate) params.append('start_date', startDate);
-  if (endDate) params.append('end_date', endDate);
+  if (start_date) params.append('start_date', start_date);
+  if (end_date) params.append('end_date', end_date);
   // basic pagination defaults (matches Pagination struct)
   // page/limit come from URL if present, otherwise defaults
   const page = initialParams.page ?? '1';
