@@ -60,11 +60,11 @@
 const viteApiUrl = import.meta.env.VITE_API_URL + '/api/v1/tasks/';
 
 // restore list filters when returning
-const backParam = new URLSearchParams(location.search).get('back');
 const backBtn = document.getElementById('backButton');
 if (backBtn) {
   try {
-    backBtn.href = backParam ? ('/board/list.html' + decodeURIComponent(backParam)) : '/board/list.html';
+    const query = new URLSearchParams(location.search);
+    backBtn.href = '/board/list.html?' + query;
   } catch (e) {
     backBtn.href = '/board/list.html';
   }
@@ -92,12 +92,14 @@ function parseQuery() {
 }
 
 async function fetchDetail() {
-  const taskId = parseQuery();
-  if (!taskId) {
-    console.error('no task id provided in query');
+  const ps = new URLSearchParams(location.search);
+  const id = ps.get('id') || '';
+
+  if (!id) {
+    console.error('no id provided in query');
     return;
   }
-  const url = viteApiUrl + encodeURIComponent(taskId);
+  const url = viteApiUrl + encodeURIComponent(id);
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);

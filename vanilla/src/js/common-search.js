@@ -1,86 +1,72 @@
 const SearchManager = {
-  // 1. 현재 URL의 쿼리 파라미터 가져오기
-  getParams() {
-    return new URLSearchParams(window.location.search);
+  /**
+   * 1. Form 내 id가 있는 모든 엘리먼트의 값을 객체(Object)로 추출
+   * @param {string|HTMLElement} formTarget - Form의 ID 문자열 또는 Form 엘리먼트
+   * @returns {Object} 추출된 검색 조건 객체
+   */
+  buildParams(formTarget) {
+    const form = typeof formTarget === 'string' ? document.getElementById(formTarget) : formTarget;
+    if (!form) return {};
+
+    const params = {};
+    // id 속성을 가진 모든 입력 요소 조회
+    const elements = form.querySelectorAll('[id]');
+
+    elements.forEach(el => {
+      const id = el.id;
+      const type = el.type;
+
+      if (type === 'checkbox') {
+        params[id] = el.checked;
+      } else if (type === 'radio') {
+        if (el.checked) params[id] = el.value;
+      } else {
+        params[id] = el.value;
+      }
+    });
+
+    return params;
   },
 
-  // 2. [list.html] URL 파라미터를 검색 Form 입력창들에 자동으로 채워주기
-  // (페이지 새로고침이나 뒤로가기 했을 때 검색창 값 유지용)
-  bindParamsToForm(formId) {
-    const form = document.getElementById(formId);
-    if (!form) return;
+  /**
+   * 2. 객체 또는 URL 쿼리 파라미터를 Form 엘리먼트에 자동 바인딩
+   * @param {string|HTMLElement} formTarget - Form의 ID 문자열 또는 Form 엘리먼트
+   * @param {Object|string|URLSearchParams} params - 바인딩할 데이터
+   */
+  bindParams(formTarget, params) {
+    const form = typeof formTarget === 'string' ? document.getElementById(formTarget) : formTarget;
+    if (!form || !params) return;
 
-    const params = this.getParams();
-    params.forEach((value, key) => {
-      const input = form.elements[key];
-      if (input) {
-        input.value = value;
+    // 입력 데이터 형태 정규화 (String / URLSearchParams -> JS Object)
+    let data = params;
+    if (typeof params === 'string') {
+      data = Object.fromEntries(new URLSearchParams(params));
+    } else if (params instanceof URLSearchParams) {
+      data = Object.fromEntries(params);
+    }
+
+    Object.keys(data).forEach(id => {
+      // form 내부에서 id로 엘리먼트 검색
+      const el = form.querySelector(`#${CSS.escape(id)}`);
+      if (!el) return;
+
+      const val = data[id];
+      const type = el.type;
+
+      if (type === 'checkbox') {
+        el.checked = val === true || val === 'true';
+      } else if (type === 'radio') {
+        el.checked = el.value === String(val);
+      } else {
+        el.value = val ?? '';
       }
     });
   },
 
-  // 3. [list.html] 상세보기 페이지로 이동할 URL 생성 (현재 검색 파라미터 유지)
-  makeDetailUrl(detailBasePath, targetParams = {}) {
-    const currentParams = this.getParams();
-
-    // ID 등 추가로 전달할 파라미터 병합 (예: { id: 10 })
-    Object.keys(targetParams).forEach(key => {
-      currentParams.set(key, targetParams[key]);
-    });
-
-    return `${detailBasePath}?${currentParams.toString()}`;
-  },
-
-  // 4. [detail.html] "목록으로" 버튼의 href 속성에 이전 검색 조건 자동으로 설정
-  setupBackButton(backBtnId, defaultListPath = '/list.html') {
-    const backBtn = document.getElementById(backBtnId);
-    if (!backBtn) return;
-
-    const currentParams = this.getParams();
-    currentParams.delete('id'); // 상세조회용 id 키는 제거
-
-    const searchString = currentParams.toString();
-    backBtn.href = searchString ? `${defaultListPath}?${searchString}` : defaultListPath;
-  }
-};
-
-
-const SearchSession = {
-  // Storage에 저장할 Key 이름 (화면별로 다르게 지정 가능)
-  STORAGE_KEY: "APP_SEARCH_CONDITION",
-
-  // 1. 검색 조건 객체(Object)를 JSON으로 저장
-  saveState(paramsObj) {
-    sessionStorage.setItem(this.STORAGE_KEY, JSON.stringify(paramsObj));
-  },
-
-  // 2. 저장된 검색 조건 객체 가져오기
-  getState() {
-    const data = sessionStorage.getItem(this.STORAGE_KEY);
-    return data ? JSON.parse(data) : null;
-  },
-
-  // 3. 저장된 검색 조건 삭제 (초기화 버튼 클릭 시 사용)
-  clearState() {
-    sessionStorage.removeItem(this.STORAGE_KEY);
-  },
-
-  // 4. 저장된 조건이 있다면 Form 입력창에 자동으로 값 채워주기
-  bindToForm(formId) {
-    const state = this.getState();
-    if (!state) return null;
-
-    const form = document.getElementById(formId);
-    if (!form) return state;
-
-    // 객체의 key-value를 순회하며 input/select 요소를 찾아 값 할당
-    Object.keys(state).forEach((key) => {
-      const input = form.elements[key];
-      if (input) {
-        input.value = state[key];
-      }
-    });
-
-    return state; // 저장되어 있던 조건 반환
+  /**
+   * 3. 현재 URL의 Query String을 객체로 변환 (보조 함수)
+   */
+  getQueryParam() {
+    return Object.fromEntries(new URLSearchParams(window.location.search));
   }
 };

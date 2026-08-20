@@ -62,85 +62,44 @@
 
 <script type="module">
 const viteApiUrl = import.meta.env.VITE_API_URL + '/api/v1/tasks';
-
 const form = document.querySelector('form');
 const tbody = document.querySelector('table tbody');
 
-// parse URL search params on load to prefill form and use page/limit
-let initialParams = {};
-function parseLocationParams() {
-  const ps = new URLSearchParams(location.search);
-  const out = {};
-  if (ps.has('keyword')) out.keyword = ps.get('keyword');
-  if (ps.has('status')) out.status = ps.get('status');
-  if (ps.has('start_date')) out.start_date = ps.get('start_date');
-  if (ps.has('end_date')) out.end_date = ps.get('end_date');
-  if (ps.has('page')) out.page = ps.get('page');
-  if (ps.has('limit')) out.limit = ps.get('limit');
-  return out;
-}
-
-function applyQueryToForm(params) {
-  if (!params) return;
-  if (params.keyword) document.getElementById('keyword').value = params.keyword;
-  if (params.status) document.getElementById('status').value = params.status;
-  if (params.start_date) document.getElementById('start_date').value = params.start_date;
-  if (params.end_date) document.getElementById('end_date').value = params.end_date;
-}
-
-function buildQuery() {
-  const params = new URLSearchParams();
-  const keyword = document.getElementById('keyword').value.trim();
-  const status = document.getElementById('status').value;
-  const start_date = document.getElementById('start_date').value;
-  const end_date = document.getElementById('end_date').value;
-  if (keyword) params.append('keyword', keyword);
-  if (status) params.append('status', status);
-  if (start_date) params.append('start_date', start_date);
-  if (end_date) params.append('end_date', end_date);
-  // basic pagination defaults (matches Pagination struct)
-  // page/limit come from URL if present, otherwise defaults
-  const page = initialParams.page ?? '1';
-  const limit = initialParams.limit ?? '10';
-  params.append('page', String(page));
-  params.append('limit', String(limit));
-  return params.toString();
-}
-
-async function fetchTasks() {
-  const q = buildQuery();
-  const url = q ? `${viteApiUrl}?${q}` : viteApiUrl;
+async function fetchList() {
+  const param = SearchManager.buildParams(form)
+  const query = new URLSearchParams(param).toString()
+  const url = `${viteApiUrl}?${query}`;
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const resp = await res.json();
     // backend returns { success: true, data: { items: [...], total, page, limit } }
     const payload = (resp && typeof resp === 'object' && 'data' in resp) ? resp.data : resp;
-    const items = payload.items || payload.tasks || payload;
+    const items = payload.items || payload;
     const total = payload.total ?? payload.count ?? (Array.isArray(items) ? items.length : 0);
     const page = payload.page ?? 1;
     const limit = payload.limit ?? payload.limit ?? 10;
-    renderTasks(items, { total, page, limit });
+    renderList(items, { total, page, limit });
   } catch (err) {
-    console.error('fetchTasks error', err);
+    console.error('fetchList error', err);
     tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>';
   }
 }
 
-function renderTasks(items, meta = {}) {
+function renderList(items, meta = {}) {
   tbody.innerHTML = '';
   if (!items || items.length === 0) {
     tbody.innerHTML = '<tr><td colspan="7" class="text-center">검색 결과가 없습니다.</td></tr>';
     return;
   }
+  const param = SearchManager.buildParams(form);
+  const query = new URLSearchParams(param).toString()
   items.forEach((t, idx) => {
     const tr = document.createElement('tr');
     tr.setAttribute('role', 'button');
     tr.addEventListener('click', () => {
-      const rawId = t.id ?? t.ID ?? t.task_id ?? t.taskId ?? '';
-      const id = encodeURIComponent(String(rawId));
-      const back = '?' + buildQuery();
-      location.href = `/board/detail.html?id=${id}&back=${encodeURIComponent(back)}`;
+      const id = t.id ?? t.ID ?? '';
+      location.href = `/board/detail.html?id=${id}&${query}`;
     });
     // Expecting TaskResponse shape
     const status = t.status || '';
@@ -176,13 +135,13 @@ function progressClass(status) {
   return '';
 }
 
-form.addEventListener('submit', (e) => { e.preventDefault(); fetchTasks(); });
-form.addEventListener('reset', () => { setTimeout(fetchTasks, 0); });
+form.addEventListener('submit', (e) => { e.preventDefault(); fetchList(); });
+form.addEventListener('reset', () => { setTimeout(fetchList, 0); });
 
 // initial load
-initialParams = parseLocationParams();
-applyQueryToForm(initialParams);
-fetchTasks();
+const query = SearchManager.getQueryParam();
+SearchManager.bindParams(form, query);
+fetchList();
 </script>
 
 {% endblock %}
