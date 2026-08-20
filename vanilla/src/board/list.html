@@ -5,24 +5,14 @@
 {% block content %}
 <div class="page-title">
   <h1>작업 목록</h1>
-  <p>작업 ID, 유형, 상태, 기간 조건으로 작업 진행 현황을 검색합니다.</p>
+  <p>키워드, 상태, 기간 조건으로 작업 진행 현황을 검색합니다.</p>
 </div>
 
 <section class="panel p-4 mb-4">
   <form class="row g-3">
-    <div class="col-md-3">
-      <label class="form-label" for="taskId">작업 ID</label>
-      <input id="taskId" class="form-control" type="text" placeholder="TASK-20260813-001">
-    </div>
-    <div class="col-md-3">
-      <label class="form-label" for="taskType">작업 유형</label>
-      <select id="taskType" class="form-select">
-        <option value="">전체</option>
-        <option>IMPORT</option>
-        <option>EXPORT</option>
-        <option>CHAT</option>
-        <option>BATCH</option>
-      </select>
+    <div class="col-md-4">
+      <label class="form-label" for="keyword">검색어</label>
+      <input id="keyword" class="form-control" type="text" placeholder="검색어 입력">
     </div>
     <div class="col-md-2">
       <label class="form-label" for="status">상태</label>
@@ -34,13 +24,13 @@
         <option>FAILED</option>
       </select>
     </div>
-    <div class="col-md-2">
-      <label class="form-label" for="fromDate">시작일</label>
-      <input id="fromDate" class="form-control" type="date">
+    <div class="col-md-3">
+      <label class="form-label" for="startDate">시작일</label>
+      <input id="startDate" class="form-control" type="date">
     </div>
-    <div class="col-md-2">
-      <label class="form-label" for="toDate">종료일</label>
-      <input id="toDate" class="form-control" type="date">
+    <div class="col-md-3">
+      <label class="form-label" for="endDate">종료일</label>
+      <input id="endDate" class="form-control" type="date">
     </div>
     <div class="col-12 d-flex justify-content-end gap-2">
       <button class="btn btn-outline-secondary" type="reset">초기화</button>
@@ -81,11 +71,10 @@ let initialParams = {};
 function parseLocationParams() {
   const ps = new URLSearchParams(location.search);
   const out = {};
-  if (ps.has('task_id')) out.task_id = ps.get('task_id');
-  if (ps.has('task_type')) out.task_type = ps.get('task_type');
+  if (ps.has('keyword')) out.keyword = ps.get('keyword');
   if (ps.has('status')) out.status = ps.get('status');
-  if (ps.has('from_date')) out.from_date = ps.get('from_date');
-  if (ps.has('to_date')) out.to_date = ps.get('to_date');
+  if (ps.has('start_date')) out.start_date = ps.get('start_date');
+  if (ps.has('end_date')) out.end_date = ps.get('end_date');
   if (ps.has('page')) out.page = ps.get('page');
   if (ps.has('limit')) out.limit = ps.get('limit');
   return out;
@@ -93,25 +82,22 @@ function parseLocationParams() {
 
 function applyQueryToForm(params) {
   if (!params) return;
-  if (params.task_id) document.getElementById('taskId').value = params.task_id;
-  if (params.task_type) document.getElementById('taskType').value = params.task_type;
+  if (params.keyword) document.getElementById('keyword').value = params.keyword;
   if (params.status) document.getElementById('status').value = params.status;
-  if (params.from_date) document.getElementById('fromDate').value = params.from_date;
-  if (params.to_date) document.getElementById('toDate').value = params.to_date;
+  if (params.start_date) document.getElementById('startDate').value = params.start_date;
+  if (params.end_date) document.getElementById('endDate').value = params.end_date;
 }
 
 function buildQuery() {
   const params = new URLSearchParams();
-  const taskId = document.getElementById('taskId').value.trim();
-  const taskType = document.getElementById('taskType').value;
+  const keyword = document.getElementById('keyword').value.trim();
   const status = document.getElementById('status').value;
-  const fromDate = document.getElementById('fromDate').value;
-  const toDate = document.getElementById('toDate').value;
-  if (taskId) params.append('task_id', taskId);
-  if (taskType) params.append('task_type', taskType);
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
+  if (keyword) params.append('keyword', keyword);
   if (status) params.append('status', status);
-  if (fromDate) params.append('from_date', fromDate);
-  if (toDate) params.append('to_date', toDate);
+  if (startDate) params.append('start_date', startDate);
+  if (endDate) params.append('end_date', endDate);
   // basic pagination defaults (matches Pagination struct)
   // page/limit come from URL if present, otherwise defaults
   const page = initialParams.page ?? '1';
