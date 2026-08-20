@@ -70,27 +70,6 @@ if (backBtn) {
   }
 }
 
-function badgeClass(status) {
-  if (!status) return 'text-bg-secondary';
-  if (status === 'RUNNING' || status === 'IN_PROGRESS') return 'text-bg-primary';
-  if (status === 'COMPLETED' || status === 'DONE') return 'text-bg-success';
-  if (status === 'PENDING' || status === 'READY') return 'text-bg-warning';
-  if (status === 'FAILED') return 'text-bg-danger';
-  return 'text-bg-secondary';
-}
-
-function progressClass(status) {
-  if (status === 'COMPLETED' || status === 'DONE') return 'bg-success';
-  if (status === 'PENDING' || status === 'READY') return 'bg-warning';
-  if (status === 'FAILED') return 'bg-danger';
-  return '';
-}
-
-function parseQuery() {
-  const ps = new URLSearchParams(location.search);
-  return ps.get('task_id') || ps.get('id') || '';
-}
-
 async function fetchDetail() {
   const ps = new URLSearchParams(location.search);
   const id = ps.get('id') || '';
@@ -153,6 +132,22 @@ function renderDetail(d) {
 function escapeHtml(str) {
   if (!str) return '';
   return String(str).replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m];});
+}
+
+function badgeClass(status) {
+  if (!status) return 'text-bg-secondary';
+  if (status === 'RUNNING' || status === 'IN_PROGRESS') return 'text-bg-primary';
+  if (status === 'COMPLETED' || status === 'DONE') return 'text-bg-success';
+  if (status === 'PENDING' || status === 'READY') return 'text-bg-warning';
+  if (status === 'FAILED') return 'text-bg-danger';
+  return 'text-bg-secondary';
+}
+
+function progressClass(status) {
+  if (status === 'COMPLETED' || status === 'DONE') return 'bg-success';
+  if (status === 'PENDING' || status === 'READY') return 'bg-warning';
+  if (status === 'FAILED') return 'bg-danger';
+  return '';
 }
 
 fetchDetail();
