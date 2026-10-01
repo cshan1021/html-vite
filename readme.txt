@@ -4,7 +4,7 @@ git remote add origin https://github.com/cshan1021/html-vite
 git pull origin main
 
 # vanilla html
-# npx create-vite@latest vanilla --template vanilla
+npm create vite@latest vanilla -- --template vanilla
 cd vanilla
 npm install
 
@@ -23,3 +23,13 @@ npm install -D glob
 npm run dev
 npm run build
 npm run preview
+
+# react html
+npm create vite@latest react -- --template react
+cd react
+npm install
+
+# react 패키지
+npm install react-router-dom
+npm install bootstrap bootstrap-icons
+npm install @tanstack/react-query
