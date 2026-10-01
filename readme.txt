@@ -26,6 +26,8 @@ npm install react-router-dom
 npm install @tanstack/react-query
 npm install bootstrap bootstrap-icons
 
+# react vite.config.js 수정 -> src 폴더 경로로 매핑
+
 # vue html
 npm create vite@latest vue -- --template vue
 cd vue
@@ -36,7 +38,7 @@ npm install vue-router@4 pinia
 npm install @tanstack/vue-query
 npm install bootstrap bootstrap-icons
 
-# vue vite.config.js 수정 -> resolve
+# vue vite.config.js 수정 -> src 폴더 경로로 매핑
 
 # .env.development
 # VITE_API_URL=http://localhost:8080
