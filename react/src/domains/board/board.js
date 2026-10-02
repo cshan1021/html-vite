@@ -1,4 +1,4 @@
-// src/features/board/board.js
+// src/domains/board/board.js
 // 1. 목록 조회 API
 export const fetchTaskList = async (filterParams) => {
   const params = new URLSearchParams();

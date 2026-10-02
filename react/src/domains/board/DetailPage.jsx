@@ -1,4 +1,4 @@
-// src/features/board/DetailPage.jsx
+// src/domains/board/DetailPage.jsx
 import React from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';

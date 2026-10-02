@@ -1,4 +1,4 @@
-// src/features/board/ListPage.jsx
+// src/domains/board/ListPage.jsx
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';

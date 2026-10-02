@@ -1,4 +1,4 @@
-// react\src\features\home\HomePage.jsx
+// react\src\domains\home\HomePage.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 

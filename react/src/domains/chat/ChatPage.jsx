@@ -1,4 +1,4 @@
-// react\src\features\chat\ChatPage.jsx
+// react\src\domains\chat\ChatPage.jsx
 import React from 'react';
 
 export default function ChatPage() {

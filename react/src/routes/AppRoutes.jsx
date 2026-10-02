@@ -3,10 +3,10 @@ import { Routes, Route } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 
 // 페이지
-import HomePage from '../features/home/HomePage';
-import BoardListPage from '../features/board/ListPage';
-import BoardDetailPage from '../features/board/DetailPage';
-import ChatPage from '../features/chat/ChatPage';
+import HomePage from '../domains/home/HomePage';
+import BoardListPage from '../domains/board/ListPage';
+import BoardDetailPage from '../domains/board/DetailPage';
+import ChatPage from '../domains/chat/ChatPage';
 
 export default function AppRoutes() {
   return (
