@@ -17,7 +17,7 @@ npm install vite-plugin-nunjucks
 npm install glob
 
 # react html
-npm create vite@latest react -- --template react
+npm create vite@latest react -- --template react-ts
 cd react
 npm install
 

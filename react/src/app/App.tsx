@@ -1,9 +1,9 @@
-// react\src\App.jsx
-import React from 'react';
+// react\src\app\App.tsx
 import { BrowserRouter } from 'react-router-dom';
-import AppRoutes from './routes/AppRoutes';
-import { AuthProvider } from './context/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+import AppRoutes from './AppRoutes';
+import { AuthProvider } from './AuthContext';
 
 const queryClient = new QueryClient();
 

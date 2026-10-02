@@ -1,12 +1,12 @@
-// react\src\routes\AppRoutes.jsx
+// react\src\app\AppRoutes.tsx
 import { Routes, Route } from 'react-router-dom';
-import MainLayout from '../layouts/MainLayout';
+import MainLayout from '../component/layout/MainLayout';
 
 // 페이지
-import HomePage from '../domains/home/HomePage';
-import BoardListPage from '../domains/board/ListPage';
-import BoardDetailPage from '../domains/board/DetailPage';
-import ChatPage from '../domains/chat/ChatPage';
+import HomePage from '../domain/home/HomePage';
+import BoardListPage from '../domain/board/ListPage';
+import BoardDetailPage from '../domain/board/DetailPage';
+import ChatPage from '../domain/chat/ChatPage';
 
 export default function AppRoutes() {
   return (

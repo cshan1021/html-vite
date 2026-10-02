@@ -1,5 +1,4 @@
-// react\src\domains\chat\ChatPage.jsx
-import React from 'react';
+// react\src\domain\chat\ChatPage.tsx
 
 export default function ChatPage() {
   return (

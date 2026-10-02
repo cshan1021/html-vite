@@ -1,5 +1,4 @@
-// react\src\domains\home\HomePage.jsx
-import React from 'react';
+// react\src\domain\home\HomePage.tsx
 import { Link } from 'react-router-dom';
 
 export default function HomePage() {

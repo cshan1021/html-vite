@@ -1,15 +1,14 @@
-// src/domains/board/ListPage.jsx
-import React, { useState } from 'react';
+import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTaskList } from './board';
+import { fetchTaskList, type TaskItem, type TaskFilterParams } from './api';
 
 export default function BoardListPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // 1. 입력 폼의 상태 (Client State)
-  const [filter, setFilter] = useState({
+  const [filter, setFilter] = useState<TaskFilterParams>({
     keyword: searchParams.get('keyword') || '',
     status: searchParams.get('status') || '',
     start_date: searchParams.get('start_date') || '',
@@ -17,12 +16,22 @@ export default function BoardListPage() {
   });
 
   // 2. 실제 API 조회에 적용되는 쿼리 상태 (URL searchParams 기반)
-  const activeFilter = {
+  const activeFilter: TaskFilterParams = {
     keyword: searchParams.get('keyword') || '',
     status: searchParams.get('status') || '',
     start_date: searchParams.get('start_date') || '',
     end_date: searchParams.get('end_date') || '',
   };
+
+  // URL 파라미터가 외부(뒤로가기/링크)에서 변경될 경우 입력 폼 상태(filter) 동기화
+  useEffect(() => {
+    setFilter({
+      keyword: searchParams.get('keyword') || '',
+      status: searchParams.get('status') || '',
+      start_date: searchParams.get('start_date') || '',
+      end_date: searchParams.get('end_date') || '',
+    });
+  }, [searchParams]);
 
   // 3. React Query를 통한 서버 데이터 조회 (Server State)
   const {
@@ -30,13 +39,13 @@ export default function BoardListPage() {
     isLoading,
     isError,
     error,
-  } = useQuery({
+  } = useQuery<TaskItem[], Error>({
     queryKey: ['tasks', activeFilter], // activeFilter가 바뀔 때만 자동 재조회 & 캐싱
     queryFn: () => fetchTaskList(activeFilter),
   });
 
   // 뱃지 / 프로그레스바 클래스 헬퍼
-  const getBadgeClass = (status) => {
+  const getBadgeClass = (status: string): string => {
     switch (status) {
       case 'RUNNING':
       case 'PROGRESS':
@@ -54,7 +63,7 @@ export default function BoardListPage() {
     }
   };
 
-  const getProgressClass = (status) => {
+  const getProgressClass = (status: string): string => {
     switch (status) {
       case 'DONE':
       case 'COMPLETED':
@@ -70,34 +79,41 @@ export default function BoardListPage() {
   };
 
   // 4. 이벤트 핸들러
-  const handleInputChange = (e) => {
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { id, value } = e.target;
     setFilter((prev) => ({ ...prev, [id]: value }));
   };
 
   // 검색 시 URL의 SearchParams를 업데이트 (자동으로 React Query가 감지하여 fetch)
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const params = new URLSearchParams();
     Object.entries(filter).forEach(([key, val]) => {
-      if (val) params.set(key, val);
+      if (val) params.set(key, String(val));
     });
     setSearchParams(params);
   };
 
   // 초기화 시 폼 상태와 URL 파라미터를 모두 비움
   const handleReset = () => {
-    const emptyFilter = { keyword: '', status: '', start_date: '', end_date: '' };
+    const emptyFilter: TaskFilterParams = {
+      keyword: '',
+      status: '',
+      start_date: '',
+      end_date: '',
+    };
     setFilter(emptyFilter);
     setSearchParams({});
   };
 
   // 상세 페이지 이동 (현재 검색 조건 유지)
-  const handleRowClick = (item) => {
-    const id = item.id || item.ID || '';
+  const handleRowClick = (item: TaskItem) => {
+    const id = item.id || item.task_id || '';
     const params = new URLSearchParams();
     Object.entries(activeFilter).forEach(([key, value]) => {
-      if (value) params.append(key, value);
+      if (value) params.append(key, String(value));
     });
 
     navigate(`/board/${id}?${params.toString()}`);
@@ -107,30 +123,36 @@ export default function BoardListPage() {
     <div className="board-list-page">
       <div className="page-title mb-4">
         <h1>작업 목록</h1>
-        <p className="text-muted">키워드, 상태, 기간 조건으로 작업 진행 현황을 검색합니다.</p>
+        <p className="text-muted">
+          키워드, 상태, 기간 조건으로 작업 진행 현황을 검색합니다.
+        </p>
       </div>
 
       {/* 검색 필터 폼 */}
       <section className="panel p-4 mb-4 border rounded bg-white">
         <form className="row g-3" onSubmit={handleSubmit}>
           <div className="col-md-4">
-            <label className="form-label" htmlFor="keyword">검색어</label>
+            <label className="form-label" htmlFor="keyword">
+              검색어
+            </label>
             <input
               id="keyword"
               className="form-control"
               type="text"
               placeholder="검색어 입력"
-              value={filter.keyword}
+              value={filter.keyword || ''}
               onChange={handleInputChange}
             />
           </div>
 
           <div className="col-md-2">
-            <label className="form-label" htmlFor="status">상태</label>
+            <label className="form-label" htmlFor="status">
+              상태
+            </label>
             <select
               id="status"
               className="form-select"
-              value={filter.status}
+              value={filter.status || ''}
               onChange={handleInputChange}
             >
               <option value="">전체</option>
@@ -142,29 +164,37 @@ export default function BoardListPage() {
           </div>
 
           <div className="col-md-3">
-            <label className="form-label" htmlFor="start_date">시작일</label>
+            <label className="form-label" htmlFor="start_date">
+              시작일
+            </label>
             <input
               id="start_date"
               className="form-control"
               type="date"
-              value={filter.start_date}
+              value={filter.start_date || ''}
               onChange={handleInputChange}
             />
           </div>
 
           <div className="col-md-3">
-            <label className="form-label" htmlFor="end_date">종료일</label>
+            <label className="form-label" htmlFor="end_date">
+              종료일
+            </label>
             <input
               id="end_date"
               className="form-control"
               type="date"
-              value={filter.end_date}
+              value={filter.end_date || ''}
               onChange={handleInputChange}
             />
           </div>
 
           <div className="col-12 d-flex justify-content-end gap-2">
-            <button className="btn btn-outline-secondary" type="button" onClick={handleReset}>
+            <button
+              className="btn btn-outline-secondary"
+              type="button"
+              onClick={handleReset}
+            >
               초기화
             </button>
             <button className="btn btn-primary" type="submit">
@@ -192,22 +222,29 @@ export default function BoardListPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan="7" className="text-center py-4">데이터를 로딩 중입니다...</td>
+                  <td colSpan={7} className="text-center py-4">
+                    데이터를 로딩 중입니다...
+                  </td>
                 </tr>
               ) : isError ? (
                 <tr>
-                  <td colSpan="7" className="text-center text-danger py-4">
-                    {error?.message || '데이터를 불러오는 중 오류가 발생했습니다.'}
+                  <td colSpan={7} className="text-center text-danger py-4">
+                    {error?.message ||
+                      '데이터를 불러오는 중 오류가 발생했습니다.'}
                   </td>
                 </tr>
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="text-center py-4">검색 결과가 없습니다.</td>
+                  <td colSpan={7} className="text-center py-4">
+                    검색 결과가 없습니다.
+                  </td>
                 </tr>
               ) : (
-                items.map((t, idx) => {
+                items.map((t: TaskItem, idx: number) => {
                   const status = t.status || '';
-                  const progress = Number.isFinite(t.progress) ? t.progress : (t.progress ?? 0);
+                  const progress = Number.isFinite(t.progress)
+                    ? (t.progress as number)
+                    : t.progress ?? 0;
                   const updated = t.updated_at || t.created_at || '';
                   const dataKey = t.data_key || '';
 
@@ -229,7 +266,9 @@ export default function BoardListPage() {
                       <td>
                         <div className="progress" style={{ height: '8px' }}>
                           <div
-                            className={`progress-bar ${getProgressClass(status)}`}
+                            className={`progress-bar ${getProgressClass(
+                              status
+                            )}`}
                             style={{ width: `${progress}%` }}
                           ></div>
                         </div>
