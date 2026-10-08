@@ -1,4 +1,4 @@
-import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
+import { useState, useEffect, type ChangeEvent, type SubmitEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { fetchTaskList, type TaskItem, type TaskFilterParams } from './api';
@@ -87,7 +87,7 @@ export default function BoardListPage() {
   };
 
   // 검색 시 URL의 SearchParams를 업데이트 (자동으로 React Query가 감지하여 fetch)
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const params = new URLSearchParams();
     Object.entries(filter).forEach(([key, val]) => {
