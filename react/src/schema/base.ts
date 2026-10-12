@@ -7,23 +7,27 @@ export const DEFAULT_SEARCH_FILTER = {
   start_date: '',
   end_date: '',
   page: 1,
-  size: 10,
+  limit: 10,
 };
-// 필터 확장 (task_type 추가)
-// export const SEARCH_FILTER = {
-//   ...DEFAULT_SEARCH_FILTER,
-//   task_type: '',
-// };
-// export type SearchFilterParams = typeof SEARCH_FILTER;
+/*
+예시) 필터 확장 (task_type 추가)
+export const SEARCH_FILTER = {
+  ...DEFAULT_SEARCH_FILTER,
+  task_type: '',
+};
+export type SearchFilterParams = typeof SEARCH_FILTER;
+*/
 
 // 공통 응답
 export type BaseResponse<T, K extends string = 'data'> = {
   success: boolean;
   message?: string;
 } & Record<K, T>;
-// 'data' 키 사용 type UserResponse = BaseResponse<User>; => { success: boolean; message: string; data: User }
-// 'item' 키 사용 type ProductResponse = BaseResponse<Product, 'item'>; =>  { success: boolean; message: string; item: Product }
-// 'result' 키 사용 type OrderResponse = BaseResponse<Order, 'result'>; =>  { success: boolean; message: string; result: Order }
+/* 예시)
+'data' 키 사용 type UserResponse = BaseResponse<User>; => { success: boolean; message: string; data: User }
+'item' 키 사용 type ProductResponse = BaseResponse<Product, 'item'>; =>  { success: boolean; message: string; item: Product }
+'result' 키 사용 type OrderResponse = BaseResponse<Order, 'result'>; =>  { success: boolean; message: string; result: Order }
+*/
 
 // 리스트 응답
 export type BaseListData<T, K extends string = 'items'> = {
@@ -31,7 +35,7 @@ export type BaseListData<T, K extends string = 'items'> = {
   page: number;
   limit: number;
 } & Record<K, T[]>;
-/*
+/* 예시)
 export type ListItem = {
   id?: string | number;
   title?: string;

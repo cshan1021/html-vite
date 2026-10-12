@@ -54,7 +54,7 @@ export const fetchTaskList = async (
     items: [],
     total: 0,
     page: filterParams.page ?? 1,
-    limit: filterParams.size ?? 10,
+    limit: filterParams.limit ?? 10,
   };
 };
 
