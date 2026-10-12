@@ -1,65 +1,24 @@
 // react\src\domain\board\DetailPage.tsx
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTaskDetail, type TaskItem } from './api';
-
-// 1. 상태 이력 항목 인터페이스
-export interface TaskStatusHistoryItem {
-  id?: string | number;
-  step?: string;
-  status?: string;
-  progress?: number;
-  message?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-// 2. 상세 조회 API 응답 데이터 인터페이스
-export interface TaskDetail extends TaskItem {
-  taskId?: string;
-  taskType?: string;
-  dataKey?: string;
-  task_status?: string;
-  task_statuses?: TaskStatusHistoryItem[];
-  statuses?: TaskStatusHistoryItem[];
-}
+import { fetchTaskDetail, type TaskStatusItem, type TaskDetailItem } from './api';
 
 export default function BoardDetailPage() {
   const { id } = useParams<{ id: string }>(); // URL 경로 파라미터 (/board/:id)
   const [searchParams] = useSearchParams(); // 기존 목록 검색 파라미터 유지용
   const navigate = useNavigate();
 
-  // 💡 TanStack Query 적용: 상세 데이터 조회 및 캐싱
+  // TanStack Query 적용: 상세 데이터 조회 및 캐싱
   const {
     data: detail,
     isLoading,
     isError,
     error,
-  } = useQuery<TaskDetail, Error>({
+  } = useQuery<TaskDetailItem, Error>({
     queryKey: ['task', id], // 'task' 식별자 + 개별 id 기반 캐시 키
-    queryFn: () => fetchTaskDetail<TaskDetail>(id!),
+    queryFn: () => fetchTaskDetail(id!),
     enabled: !!id, // id 값이 존재할 때만 API 요청 진행
   });
-
-  // 뱃지 스타일 매핑 함수
-  const getBadgeClass = (status: string): string => {
-    switch (status) {
-      case 'RUNNING':
-      case 'IN_PROGRESS':
-      case 'PROGRESS':
-        return 'text-bg-primary';
-      case 'COMPLETED':
-      case 'DONE':
-        return 'text-bg-success';
-      case 'PENDING':
-      case 'READY':
-        return 'text-bg-warning';
-      case 'FAILED':
-        return 'text-bg-danger';
-      default:
-        return 'text-bg-secondary';
-    }
-  };
 
   // 목록으로 돌아가기 (기존 검색 파라미터 복원)
   const handleBackToList = () => {
@@ -96,16 +55,15 @@ export default function BoardDetailPage() {
     );
   }
 
-  // 3. 데이터 바인딩 변수
-  const taskId = detail.task_id || detail.taskId || '-';
-  const taskType = detail.task_type || detail.taskType || '-';
-  const dataKey = detail.data_key || detail.dataKey || '-';
-  const status = detail.status || detail.task_status || '-';
-  const progress = Number.isFinite(detail.progress)
-    ? (detail.progress as number)
-    : detail.progress ?? 0;
-  const statuses: TaskStatusHistoryItem[] =
-    detail.task_statuses || detail.statuses || [];
+  // 3. 데이터 바인딩 변수 (api.ts의 TaskDetailItem 필드 기준)
+  const taskId = detail.task_id || '-';
+  const taskType = detail.task_type || '-';
+  const dataKey = detail.data_key || '-';
+  const status = detail.task_statuses?.[0]?.status || '-';
+  const progress = Number.isFinite(detail.task_statuses?.[0]?.progress)
+    ? (detail.task_statuses?.[0]?.progress as number)
+    : 0;
+  const statuses: TaskStatusItem[] = detail.task_statuses || [];
 
   return (
     <div className="board-detail-page">
@@ -142,7 +100,7 @@ export default function BoardDetailPage() {
           </div>
           <div className="col-md-3">
             <div className="text-secondary small">현재 상태</div>
-            <span className={`badge ${getBadgeClass(status)}`}>{status}</span>
+            <div>{status}</div>
           </div>
           <div className="col-12">
             <div className="text-secondary small mb-2">진행률</div>
@@ -186,7 +144,7 @@ export default function BoardDetailPage() {
                   </td>
                 </tr>
               ) : (
-                statuses.map((s: TaskStatusHistoryItem, idx: number) => {
+                statuses.map((s: TaskStatusItem, idx: number) => {
                   const step = s.step || '';
                   const st = s.status || '';
                   const prog = Number.isFinite(s.progress)
@@ -198,11 +156,7 @@ export default function BoardDetailPage() {
                   return (
                     <tr key={s.id || idx}>
                       <td>{step}</td>
-                      <td>
-                        <span className={`badge ${getBadgeClass(st)}`}>
-                          {st}
-                        </span>
-                      </td>
+                      <td>{st}</td>
                       <td>{prog}%</td>
                       <td>{msg}</td>
                       <td>{created}</td>

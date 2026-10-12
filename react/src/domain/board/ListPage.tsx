@@ -1,115 +1,36 @@
-import { useState, useEffect, type ChangeEvent, type SubmitEvent } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+// react/src/pages/BoardListPage.tsx
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTaskList, type TaskItem, type TaskFilterParams } from './api';
+import { useSearchFilter } from '../../hook/useSearchFilter';
+import { BOARD_SEARCH_FILTER, fetchTaskList, type TaskListItem, type TaskListData } from './api';
 
 export default function BoardListPage() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
 
-  // 1. 입력 폼의 상태 (Client State)
-  const [filter, setFilter] = useState<TaskFilterParams>({
-    keyword: searchParams.get('keyword') || '',
-    status: searchParams.get('status') || '',
-    start_date: searchParams.get('start_date') || '',
-    end_date: searchParams.get('end_date') || '',
-  });
-
-  // 2. 실제 API 조회에 적용되는 쿼리 상태 (URL searchParams 기반)
-  const activeFilter: TaskFilterParams = {
-    keyword: searchParams.get('keyword') || '',
-    status: searchParams.get('status') || '',
-    start_date: searchParams.get('start_date') || '',
-    end_date: searchParams.get('end_date') || '',
-  };
-
-  // URL 파라미터가 외부(뒤로가기/링크)에서 변경될 경우 입력 폼 상태(filter) 동기화
-  useEffect(() => {
-    setFilter({
-      keyword: searchParams.get('keyword') || '',
-      status: searchParams.get('status') || '',
-      start_date: searchParams.get('start_date') || '',
-      end_date: searchParams.get('end_date') || '',
-    });
-  }, [searchParams]);
-
-  // 3. React Query를 통한 서버 데이터 조회 (Server State)
+  // 1. 공통 검색 필터 훅 적용
   const {
-    data: items = [],
+    filter,
+    activeFilter,
+    handleInputChange,
+    handleSubmit,
+    handleReset,
+  } = useSearchFilter(BOARD_SEARCH_FILTER);
+
+  // 2. React Query를 통한 서버 데이터 조회 (TaskListData 반환 타입 적용)
+  const {
+    data = { items: [], total: 0, page: 1, limit: 10 },
     isLoading,
     isError,
     error,
-  } = useQuery<TaskItem[], Error>({
-    queryKey: ['tasks', activeFilter], // activeFilter가 바뀔 때만 자동 재조회 & 캐싱
+  } = useQuery<TaskListData, Error>({
+    queryKey: ['tasks', activeFilter],
     queryFn: () => fetchTaskList(activeFilter),
   });
 
-  // 뱃지 / 프로그레스바 클래스 헬퍼
-  const getBadgeClass = (status: string): string => {
-    switch (status) {
-      case 'RUNNING':
-      case 'PROGRESS':
-        return 'text-bg-primary';
-      case 'DONE':
-      case 'COMPLETED':
-        return 'text-bg-success';
-      case 'READY':
-      case 'PENDING':
-        return 'text-bg-warning';
-      case 'FAILED':
-        return 'text-bg-danger';
-      default:
-        return 'text-bg-secondary';
-    }
-  };
-
-  const getProgressClass = (status: string): string => {
-    switch (status) {
-      case 'DONE':
-      case 'COMPLETED':
-        return 'bg-success';
-      case 'READY':
-      case 'PENDING':
-        return 'bg-warning';
-      case 'FAILED':
-        return 'bg-danger';
-      default:
-        return '';
-    }
-  };
-
-  // 4. 이벤트 핸들러
-  const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { id, value } = e.target;
-    setFilter((prev) => ({ ...prev, [id]: value }));
-  };
-
-  // 검색 시 URL의 SearchParams를 업데이트 (자동으로 React Query가 감지하여 fetch)
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const params = new URLSearchParams();
-    Object.entries(filter).forEach(([key, val]) => {
-      if (val) params.set(key, String(val));
-    });
-    setSearchParams(params);
-  };
-
-  // 초기화 시 폼 상태와 URL 파라미터를 모두 비움
-  const handleReset = () => {
-    const emptyFilter: TaskFilterParams = {
-      keyword: '',
-      status: '',
-      start_date: '',
-      end_date: '',
-    };
-    setFilter(emptyFilter);
-    setSearchParams({});
-  };
+  const { items, total } = data;
 
   // 상세 페이지 이동 (현재 검색 조건 유지)
-  const handleRowClick = (item: TaskItem) => {
+  const handleRowClick = (item: TaskListItem) => {
     const id = item.id || item.task_id || '';
     const params = new URLSearchParams();
     Object.entries(activeFilter).forEach(([key, value]) => {
@@ -124,7 +45,7 @@ export default function BoardListPage() {
       <div className="page-title mb-4">
         <h1>작업 목록</h1>
         <p className="text-muted">
-          키워드, 상태, 기간 조건으로 작업 진행 현황을 검색합니다.
+          키워드, 상태, 기간 조건으로 작업 진행 현황을 검색합니다. (총 {total}건)
         </p>
       </div>
 
@@ -240,7 +161,7 @@ export default function BoardListPage() {
                   </td>
                 </tr>
               ) : (
-                items.map((t: TaskItem, idx: number) => {
+                items.map((t: TaskListItem, idx: number) => {
                   const status = t.status || '';
                   const progress = Number.isFinite(t.progress)
                     ? (t.progress as number)
@@ -254,25 +175,12 @@ export default function BoardListPage() {
                       role="button"
                       onClick={() => handleRowClick(t)}
                     >
-                      <td>{idx + 1}</td>
+                      <td>{(data.page - 1) * data.limit + idx + 1}</td>
                       <td className="fw-semibold">{t.task_id || ''}</td>
                       <td>{t.task_type || ''}</td>
                       <td>{dataKey}</td>
-                      <td>
-                        <span className={`badge ${getBadgeClass(status)}`}>
-                          {status}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="progress" style={{ height: '8px' }}>
-                          <div
-                            className={`progress-bar ${getProgressClass(
-                              status
-                            )}`}
-                            style={{ width: `${progress}%` }}
-                          ></div>
-                        </div>
-                      </td>
+                      <td>{status}</td>
+                      <td>{progress}</td>
                       <td>{updated}</td>
                     </tr>
                   );

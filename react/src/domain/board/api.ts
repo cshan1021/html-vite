@@ -1,80 +1,107 @@
 // react\src\domain\board\api.ts
-// 1. 요청/응답 타입 정의
-export interface TaskFilterParams {
-  keyword?: string;
-  status?: string;
-  start_date?: string;
-  end_date?: string;
-  page?: number | string;
-  size?: number | string;
-  [key: string]: any; // 필요시 기타 동적 쿼리 허용
-}
+import { DEFAULT_SEARCH_FILTER } from '../../schema/base';
+import type { BaseResponse, BaseListData } from '../../schema/base';
 
-export interface TaskItem {
+// 검색 필터 정의 또는 확장
+export const BOARD_SEARCH_FILTER = { ...DEFAULT_SEARCH_FILTER };
+export type BoardSearchFilterParams = typeof BOARD_SEARCH_FILTER;
+
+// API URL 헬퍼
+const TASK_API_URL = `${import.meta.env.VITE_API_URL || ''}/api/v1/tasks`;
+
+// Board - Task 목록 조회
+export type TaskListItem = {
   id: string | number;
-  title: string;
+  task_id: string;
+  task_type?: string;
+  data_key?: string;
+  created_at?: string;
+  updated_at?: string;
   status?: string;
-  createdAt?: string;
-  [key: string]: any; // 서버 응답 필드 구조에 맞춰 확장
+  progress?: number;
 }
+export type TaskListData = BaseListData<TaskListItem>;
 
-// API 공통 응답 구조 (data 래핑 대응)
-interface ApiResponse<T> {
-  data?: T | { items?: T[] };
-  items?: T[];
-  [key: string]: any;
-}
-
-// Base URL 헬퍼 (중복 제거 및 슬래시 처리)
-const BASE_URL = `${import.meta.env.VITE_API_URL || ''}/api/v1/tasks`;
-
-// 2. 목록 조회 API
 export const fetchTaskList = async (
-  filterParams: TaskFilterParams
-): Promise<TaskItem[]> => {
+  filterParams: BoardSearchFilterParams
+): Promise<TaskListData> => {
   const params = new URLSearchParams();
   
   Object.entries(filterParams).forEach(([key, value]) => {
-    // null, undefined, 빈 문자열 제외 처리 (0이나 false 값은 유지하도록 조건 보완)
     if (value !== undefined && value !== null && value !== '') {
       params.append(key, String(value));
     }
   });
 
   const queryString = params.toString();
-  const url = queryString ? `${BASE_URL}?${queryString}` : BASE_URL;
+  const url = queryString ? `${TASK_API_URL}?${queryString}` : TASK_API_URL;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-  const resp: ApiResponse<TaskItem> = await res.json();
+  const resp: BaseResponse<TaskListData> = await res.json();
 
-  // payload 추출
-  const payload = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
-
-  if (Array.isArray(payload)) {
-    return payload;
+  // BaseResponse { success, message, data: BaseListData } 구조인 경우
+  if (resp && typeof resp === 'object' && 'data' in resp && resp.data) {
+    return resp.data;
   }
-  if (payload && typeof payload === 'object' && 'items' in payload && Array.isArray(payload.items)) {
-    return payload.items;
+  // BaseResponse 없이 BaseListData 구조만 바로 내려오는 경우 (Fallback)
+  if (resp && typeof resp === 'object' && 'items' in resp) {
+    return resp as unknown as BaseListData<TaskListItem>;
   }
-
-  return [];
+  // 예외 기본값
+  return {
+    items: [],
+    total: 0,
+    page: filterParams.page ?? 1,
+    limit: filterParams.size ?? 10,
+  };
 };
 
-// 3. 상세 조회 API
-export const fetchTaskDetail = async <T = TaskItem>(
+// Board - Task 상세 조회
+export type TaskStatusItem = {
+  id?: string | number;
+  task_id?: string;
+  step?: string;
+  status?: string;
+  progress?: number;
+  message?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type TaskDetailItem = {
+  id: string | number;
+  task_id: string;
+  task_type?: string;
+  data_key?: string;
+  created_at?: string;
+  updated_at?: string;
+  task_statuses?: TaskStatusItem[];
+}
+
+export const fetchTaskDetail = async (
   id: string | number
-): Promise<T> => {
+): Promise<TaskDetailItem> => {
   if (!id) throw new Error('작업 ID가 필요합니다.');
 
-  const url = `${BASE_URL}/${encodeURIComponent(String(id))}`;
+  const url = `${TASK_API_URL}/${encodeURIComponent(String(id))}`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-  const resp: ApiResponse<T> = await res.json();
+  const resp: BaseResponse<TaskDetailItem> = await res.json();
 
-  const payload = resp && typeof resp === 'object' && 'data' in resp ? resp.data : resp;
-  return payload as T;
+  // BaseResponse { success, message, data: TaskDetailItem } 형태인 경우
+  if (resp && typeof resp === 'object' && 'data' in resp && resp.data) {
+    return resp.data;
+  }
+
+  // BaseResponse 없이 TaskDetailItem 구조만 바로 내려오는 경우
+  if (resp && typeof resp === 'object' && 'task_id' in resp) {
+    return resp as unknown as TaskDetailItem;
+  }
+
+  // 올바른 응답 형식이 아닌 경우
+  throw new Error('올바르지 않은 상세 데이터 응답 형식입니다.');
 };
