@@ -56,7 +56,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   // 로그인 함수
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, _password: string) => {
     try {
       // API 호출 예시
       // const res = await fetch('/api/v1/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
