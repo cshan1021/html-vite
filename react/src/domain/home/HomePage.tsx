@@ -11,7 +11,7 @@ export default function HomePage() {
         </p>
       </div>
       <div className="d-flex gap-2">
-        <Link className="btn btn-primary" to="/board">
+        <Link className="btn btn-primary" to="/task">
           작업 목록 보기
         </Link>
         <Link className="btn btn-outline-secondary" to="/chat">

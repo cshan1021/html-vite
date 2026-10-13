@@ -1,5 +1,5 @@
-// react\src\domain\board\api.ts
-import type { BoardSearchFilterParams } from './schema';
+// react\src\domain\task\api.ts
+import type { TaskSearchFilterParams } from './schema';
 import type { TaskListData, TaskListResponse } from './schema';
 import type { TaskDetailData, TaskDetailResponse } from './schema';
 
@@ -8,7 +8,7 @@ const TASK_API_URL = `${import.meta.env.VITE_API_URL || ''}/api/v1/tasks`;
 
 // Task 목록 조회
 export const fetchTaskList = async (
-  filterParams: BoardSearchFilterParams
+  filterParams: TaskSearchFilterParams
 ): Promise<TaskListData> => {
   const params = new URLSearchParams();
   

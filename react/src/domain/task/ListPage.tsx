@@ -1,12 +1,12 @@
-// react/src/pages/BoardListPage.tsx
+// react/src/pages/TaskListPage.tsx
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchFilter } from '../../hook/useSearchFilter';
 
-import { BOARD_SEARCH_FILTER, type TaskListItem, type TaskListData } from './schema';
+import { TASK_SEARCH_FILTER, type TaskListItem, type TaskListData } from './schema';
 import { fetchTaskList } from './api';
 
-export default function BoardListPage() {
+export default function TaskListPage() {
   const navigate = useNavigate();
 
   // 1. 공통 검색 필터 훅 적용
@@ -16,7 +16,7 @@ export default function BoardListPage() {
     handleInputChange,
     handleSubmit,
     handleReset,
-  } = useSearchFilter(BOARD_SEARCH_FILTER);
+  } = useSearchFilter(TASK_SEARCH_FILTER);
 
   // 2. React Query를 통한 서버 데이터 조회 (TaskListData 반환 타입 적용)
   const {
@@ -25,7 +25,7 @@ export default function BoardListPage() {
     isError,
     error,
   } = useQuery<TaskListData, Error>({
-    queryKey: ['tasks', activeFilter],
+    queryKey: ['task', activeFilter],
     queryFn: () => fetchTaskList(activeFilter),
   });
 
@@ -39,11 +39,11 @@ export default function BoardListPage() {
       if (value) params.append(key, String(value));
     });
 
-    navigate(`/board/${id}?${params.toString()}`);
+    navigate(`/task/${id}?${params.toString()}`);
   };
 
   return (
-    <div className="board-list-page">
+    <div className="task-list-page">
       <div className="page-title mb-4">
         <h1>작업 목록</h1>
         <p className="text-muted">

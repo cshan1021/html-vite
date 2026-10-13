@@ -1,12 +1,12 @@
-// react\src\domain\board\DetailPage.tsx
+// react\src\domain\task\DetailPage.tsx
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchTaskDetail } from './api';
 import type { TaskStatus, TaskMaster, TaskDetailData } from './schema';
 
-export default function BoardDetailPage() {
-  const { id } = useParams<{ id: string }>(); // URL 경로 파라미터 (/board/:id)
+export default function TaskDetailPage() {
+  const { id } = useParams<{ id: string }>(); // URL 경로 파라미터 (/task/:id)
   const [searchParams] = useSearchParams(); // 기존 목록 검색 파라미터 유지용
   const navigate = useNavigate();
 
@@ -25,7 +25,7 @@ export default function BoardDetailPage() {
   // 목록으로 돌아가기 (기존 검색 파라미터 복원)
   const handleBackToList = () => {
     const queryString = searchParams.toString();
-    navigate(`/board${queryString ? `?${queryString}` : ''}`);
+    navigate(`/task${queryString ? `?${queryString}` : ''}`);
   };
 
   // 1. 로딩 상태
@@ -61,7 +61,7 @@ export default function BoardDetailPage() {
   const statuses: TaskStatus[] = detail.statuses || [];
 
   return (
-    <div className="board-detail-page">
+    <div className="task-detail-page">
       {/* 상단 타이틀 영역 */}
       <div className="page-title d-flex align-items-start justify-content-between mb-4">
         <div>

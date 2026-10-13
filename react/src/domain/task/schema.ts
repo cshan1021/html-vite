@@ -2,14 +2,14 @@ import { DEFAULT_SEARCH_FILTER } from '../../schema/search';
 import type { ApiResponse, ApiPagedData } from '../../schema/api';
 
 // 검색 필터 정의 또는 확장
-export const BOARD_SEARCH_FILTER = {
+export const TASK_SEARCH_FILTER = {
   ...DEFAULT_SEARCH_FILTER,
   status: '',
   task_type: '',
   start_date: '',
   end_date: '',
 };
-export type BoardSearchFilterParams = typeof BOARD_SEARCH_FILTER;
+export type TaskSearchFilterParams = typeof TASK_SEARCH_FILTER;
 
 // Task 목록 스키마`
 export type TaskListItem = {

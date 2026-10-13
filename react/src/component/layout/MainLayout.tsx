@@ -27,7 +27,7 @@ export default function MainLayout() {
           <div className="sidebar-title">메뉴</div>
           <nav className="sidebar-nav">
             <NavLink 
-              to="/board" 
+              to="/task" 
               className={({ isActive }) => (isActive ? 'active' : '')}
             >
               <i className="bi bi-list-task me-2"></i>
