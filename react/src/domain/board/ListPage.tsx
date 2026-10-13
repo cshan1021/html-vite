@@ -2,7 +2,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchFilter } from '../../hook/useSearchFilter';
-import { BOARD_SEARCH_FILTER, fetchTaskList, type TaskListItem, type TaskListData } from './api';
+
+import { BOARD_SEARCH_FILTER, type TaskListItem, type TaskListData } from './schema';
+import { fetchTaskList } from './api';
 
 export default function BoardListPage() {
   const navigate = useNavigate();

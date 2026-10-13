@@ -1,7 +1,9 @@
 // react\src\domain\board\DetailPage.tsx
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTaskDetail, type TaskStatusItem, type TaskDetailItem } from './api';
+
+import { fetchTaskDetail } from './api';
+import type { TaskStatus, TaskMaster, TaskDetailData } from './schema';
 
 export default function BoardDetailPage() {
   const { id } = useParams<{ id: string }>(); // URL 경로 파라미터 (/board/:id)
@@ -14,7 +16,7 @@ export default function BoardDetailPage() {
     isLoading,
     isError,
     error,
-  } = useQuery<TaskDetailItem, Error>({
+  } = useQuery<TaskDetailData, Error>({
     queryKey: ['task', id], // 'task' 식별자 + 개별 id 기반 캐시 키
     queryFn: () => fetchTaskDetail(id!),
     enabled: !!id, // id 값이 존재할 때만 API 요청 진행
@@ -39,7 +41,7 @@ export default function BoardDetailPage() {
   }
 
   // 2. 에러 및 데이터 부재 처리
-  if (isError || !detail) {
+  if (isError || !detail?.master) {
     return (
       <div className="alert alert-danger my-4" role="alert">
         {error?.message || '상세 정보를 찾을 수 없습니다.'}
@@ -55,15 +57,8 @@ export default function BoardDetailPage() {
     );
   }
 
-  // 3. 데이터 바인딩 변수 (api.ts의 TaskDetailItem 필드 기준)
-  const taskId = detail.task_id || '-';
-  const taskType = detail.task_type || '-';
-  const dataKey = detail.data_key || '-';
-  const status = detail.task_statuses?.[0]?.status || '-';
-  const progress = Number.isFinite(detail.task_statuses?.[0]?.progress)
-    ? (detail.task_statuses?.[0]?.progress as number)
-    : 0;
-  const statuses: TaskStatusItem[] = detail.task_statuses || [];
+  const master: TaskMaster = detail.master;
+  const statuses: TaskStatus[] = detail.statuses || [];
 
   return (
     <div className="board-detail-page">
@@ -72,7 +67,7 @@ export default function BoardDetailPage() {
         <div>
           <h1>작업 상세</h1>
           <p className="text-muted mb-0">
-            {taskId} 작업의 기본 정보와 상태 이력을 확인합니다.
+            {master.task_id} 작업의 기본 정보와 상태 이력을 확인합니다.
           </p>
         </div>
         <button
@@ -88,34 +83,19 @@ export default function BoardDetailPage() {
         <div className="row g-4">
           <div className="col-md-3">
             <div className="text-secondary small">작업 ID</div>
-            <div className="fw-semibold">{taskId}</div>
+            <div className="fw-semibold">{master.task_id}</div>
           </div>
           <div className="col-md-3">
             <div className="text-secondary small">작업 유형</div>
-            <div>{taskType}</div>
+            <div>{master.task_type}</div>
           </div>
           <div className="col-md-3">
             <div className="text-secondary small">데이터 키</div>
-            <div>{dataKey}</div>
+            <div>{master.data_key}</div>
           </div>
           <div className="col-md-3">
-            <div className="text-secondary small">현재 상태</div>
-            <div>{status}</div>
-          </div>
-          <div className="col-12">
-            <div className="text-secondary small mb-2">진행률</div>
-            <div className="progress" style={{ height: '12px' }}>
-              <div
-                className="progress-bar"
-                style={{ width: `${progress}%` }}
-                role="progressbar"
-                aria-valuenow={progress}
-                aria-valuemin={0}
-                aria-valuemax={100}
-              >
-                {progress}%
-              </div>
-            </div>
+            <div className="text-secondary small">생성 일시</div>
+            <div>{master.created_at}</div>
           </div>
         </div>
       </section>
@@ -144,7 +124,7 @@ export default function BoardDetailPage() {
                   </td>
                 </tr>
               ) : (
-                statuses.map((s: TaskStatusItem, idx: number) => {
+                statuses.map((s: TaskStatus, idx: number) => {
                   const step = s.step || '';
                   const st = s.status || '';
                   const prog = Number.isFinite(s.progress)
