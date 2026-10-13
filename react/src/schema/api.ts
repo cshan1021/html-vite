@@ -1,4 +1,4 @@
-// react\src\schema\base.ts
+// react\src\schema\api.ts
 
 // 공통 응답
 export type ApiResponse<T, K extends string = 'data'> = {
