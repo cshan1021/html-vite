@@ -9,7 +9,7 @@ import { fetchTaskList } from './api';
 export default function TaskListPage() {
   const navigate = useNavigate();
 
-  // 1. 공통 검색 필터 훅 적용
+  // 공통 검색 필터 훅 적용
   const {
     filter,
     activeFilter,
@@ -18,7 +18,7 @@ export default function TaskListPage() {
     handleReset,
   } = useSearchFilter(TASK_SEARCH_FILTER);
 
-  // 2. React Query를 통한 서버 데이터 조회 (TaskListData 반환 타입 적용)
+  // 데이터 조회 및 캐싱
   const {
     data = { items: [], total: 0, page: 1, limit: 10 },
     isLoading,
@@ -31,7 +31,7 @@ export default function TaskListPage() {
 
   const { items, total } = data;
 
-  // 상세 페이지 이동 (현재 검색 조건 유지)
+  // 상세 페이지 이동
   const handleRowClick = (item: TaskListItem) => {
     const id = item.id || item.task_id || '';
     const params = new URLSearchParams();
@@ -58,26 +58,14 @@ export default function TaskListPage() {
             <label className="form-label" htmlFor="keyword">
               검색어
             </label>
-            <input
-              id="keyword"
-              className="form-control"
-              type="text"
-              placeholder="검색어 입력"
-              value={filter.keyword || ''}
-              onChange={handleInputChange}
-            />
+            <input id="keyword" className="form-control" type="text" placeholder="검색어 입력" value={filter.keyword || ''} onChange={handleInputChange}/>
           </div>
 
           <div className="col-md-2">
             <label className="form-label" htmlFor="status">
               상태
             </label>
-            <select
-              id="status"
-              className="form-select"
-              value={filter.status || ''}
-              onChange={handleInputChange}
-            >
+            <select id="status" className="form-select" value={filter.status || ''} onChange={handleInputChange}>
               <option value="">전체</option>
               <option value="PENDING">PENDING</option>
               <option value="PROGRESS">PROGRESS</option>
@@ -90,34 +78,18 @@ export default function TaskListPage() {
             <label className="form-label" htmlFor="start_date">
               시작일
             </label>
-            <input
-              id="start_date"
-              className="form-control"
-              type="date"
-              value={filter.start_date || ''}
-              onChange={handleInputChange}
-            />
+            <input id="start_date" className="form-control" type="date" value={filter.start_date || ''} onChange={handleInputChange}/>
           </div>
 
           <div className="col-md-3">
             <label className="form-label" htmlFor="end_date">
               종료일
             </label>
-            <input
-              id="end_date"
-              className="form-control"
-              type="date"
-              value={filter.end_date || ''}
-              onChange={handleInputChange}
-            />
+            <input id="end_date" className="form-control" type="date" value={filter.end_date || ''} onChange={handleInputChange}/>
           </div>
 
           <div className="col-12 d-flex justify-content-end gap-2">
-            <button
-              className="btn btn-outline-secondary"
-              type="button"
-              onClick={handleReset}
-            >
+            <button className="btn btn-outline-secondary" type="button" onClick={handleReset}>
               초기화
             </button>
             <button className="btn btn-primary" type="submit">

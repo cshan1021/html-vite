@@ -6,11 +6,11 @@ import { fetchTaskDetail } from './api';
 import type { TaskStatus, TaskMaster, TaskDetailData } from './schema';
 
 export default function TaskDetailPage() {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>(); // URL 경로 파라미터 (/task/:id)
   const [searchParams] = useSearchParams(); // 기존 목록 검색 파라미터 유지용
-  const navigate = useNavigate();
 
-  // TanStack Query 적용: 상세 데이터 조회 및 캐싱
+  // 데이터 조회 및 캐싱
   const {
     data: detail,
     isLoading,
@@ -28,7 +28,7 @@ export default function TaskDetailPage() {
     navigate(`/task${queryString ? `?${queryString}` : ''}`);
   };
 
-  // 1. 로딩 상태
+  // 로딩 상태
   if (isLoading) {
     return (
       <div className="text-center py-5">
@@ -40,16 +40,13 @@ export default function TaskDetailPage() {
     );
   }
 
-  // 2. 에러 및 데이터 부재 처리
+  // 에러 및 데이터 부재 처리
   if (isError || !detail?.master) {
     return (
       <div className="alert alert-danger my-4" role="alert">
         {error?.message || '상세 정보를 찾을 수 없습니다.'}
         <div className="mt-3">
-          <button
-            className="btn btn-outline-danger btn-sm"
-            onClick={handleBackToList}
-          >
+          <button className="btn btn-outline-danger btn-sm" onClick={handleBackToList}>
             목록으로 돌아가기
           </button>
         </div>
@@ -70,10 +67,7 @@ export default function TaskDetailPage() {
             {master.task_id} 작업의 기본 정보와 상태 이력을 확인합니다.
           </p>
         </div>
-        <button
-          className="btn btn-outline-secondary"
-          onClick={handleBackToList}
-        >
+        <button className="btn btn-outline-secondary" onClick={handleBackToList}>
           목록
         </button>
       </div>
