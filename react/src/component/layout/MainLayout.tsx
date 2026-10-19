@@ -26,9 +26,13 @@ export default function MainLayout() {
         <aside className="app-sidebar">
           <div className="sidebar-title">메뉴</div>
           <nav className="sidebar-nav">
-            <NavLink to="/task" className={({ isActive }) => (isActive ? 'active' : '')}>
+            <NavLink to="/tasks" className={({ isActive }) => (isActive ? 'active' : '')}>
               <i className="bi bi-list-task me-2"></i>
               <span>게시판</span>
+            </NavLink>
+            <NavLink to="/tasks/sse" className={({ isActive }) => (isActive ? 'active' : '')}>
+              <i className="bi bi-list-task me-2"></i>
+              <span>SSE</span>
             </NavLink>
             <NavLink to="/chat" className={({ isActive }) => (isActive ? 'active' : '')}>
               <i className="bi bi-chat-dots me-2"></i>

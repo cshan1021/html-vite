@@ -6,7 +6,7 @@ import type { TaskDetailData, TaskDetailResponse } from './schema';
 // API URL 헬퍼
 const TASK_API_URL = `${import.meta.env.VITE_API_URL || ''}/api/v1/tasks`;
 
-// Task 목록 조회
+// 목록 조회
 export const fetchTaskList = async (
   filterParams: TaskSearchFilterParams
 ): Promise<TaskListData> => {
@@ -43,7 +43,7 @@ export const fetchTaskList = async (
   };
 };
 
-// Task 상세 조회
+// 정보 조회
 export const fetchTaskDetail = async (
   id: string | number
 ): Promise<TaskDetailData> => {
@@ -68,4 +68,9 @@ export const fetchTaskDetail = async (
 
   // 올바른 응답 형식이 아닌 경우
   throw new Error('올바르지 않은 상세 데이터 응답 형식입니다.');
+};
+
+// SSE 요청
+export const createTaskEvent = (): EventSource => {
+  return new EventSource(`${TASK_API_URL}/sse`);
 };

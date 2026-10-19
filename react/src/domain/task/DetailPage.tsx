@@ -25,7 +25,7 @@ export default function TaskDetailPage() {
   // 목록으로 돌아가기 (기존 검색 파라미터 복원)
   const handleBackToList = () => {
     const queryString = searchParams.toString();
-    navigate(`/task${queryString ? `?${queryString}` : ''}`);
+    navigate(`/tasks${queryString ? `?${queryString}` : ''}`);
   };
 
   // 로딩 상태

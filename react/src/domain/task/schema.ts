@@ -1,5 +1,6 @@
 import { DEFAULT_SEARCH_FILTER } from '../../schema/search';
 import type { ApiResponse, ApiPagedData } from '../../schema/api';
+import type { SseResponse } from '../../schema/sse';
 
 // 검색 필터 정의 또는 확장
 export const TASK_SEARCH_FILTER = {
@@ -49,3 +50,14 @@ export type TaskDetailData = {
   statuses?: TaskStatus[];
 }
 export type TaskDetailResponse = ApiResponse<TaskDetailData> 
+
+// SSE 스키마
+export type TaskSseData = {
+  id: string;
+  step: string;
+  progress: number;
+  completed: boolean;
+  failed: boolean;
+  message: string;
+};
+export type TaskSseResponse = SseResponse<TaskSseData>;

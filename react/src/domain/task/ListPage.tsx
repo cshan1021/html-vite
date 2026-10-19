@@ -39,7 +39,7 @@ export default function TaskListPage() {
       if (value) params.append(key, String(value));
     });
 
-    navigate(`/task/${id}?${params.toString()}`);
+    navigate(`/tasks/${id}?${params.toString()}`);
   };
 
   return (

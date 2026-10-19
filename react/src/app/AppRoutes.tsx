@@ -6,6 +6,7 @@ import MainLayout from '../component/layout/MainLayout';
 import HomePage from '../domain/home/HomePage';
 import TaskListPage from '../domain/task/ListPage';
 import TaskDetailPage from '../domain/task/DetailPage';
+import TaskSsePage from '../domain/task/SsePage';
 import ChatPage from '../domain/chat/ChatPage';
 
 export default function AppRoutes() {
@@ -16,8 +17,11 @@ export default function AppRoutes() {
         <Route path="/" element={<HomePage />} />
 
         {/* 게시판 */}
-        <Route path="/task" element={<TaskListPage />} />
-        <Route path="/task/:id" element={<TaskDetailPage />} />
+        <Route path="/tasks" element={<TaskListPage />} />
+        <Route path="/tasks/:id" element={<TaskDetailPage />} />
+
+        {/* SSE */}
+        <Route path="/tasks/sse" element={<TaskSsePage />} />
 
         {/* CHAT */}
         <Route path="/chat" element={<ChatPage />} />
