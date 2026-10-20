@@ -2,6 +2,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
+import { API_EPS } from '../../constant/config';
+import { ROUTES } from '../../constant/routes';
 import { useSearchFilter } from '../../hook/useSearchFilter';
 import { httpGet } from '../../util/http';
 import { TASK_SEARCH_FILTER, type TaskListItem, type TaskListData } from './schema';
@@ -19,7 +21,6 @@ export default function TaskListPage() {
   } = useSearchFilter(TASK_SEARCH_FILTER);
 
   // 데이터 조회 및 캐싱
-  const API_URL = `${import.meta.env.VITE_API_URL || ''}/api/v1/tasks`;
   const {
     data = { items: [], total: 0, page: 1, limit: 10 },
     isLoading,
@@ -27,7 +28,7 @@ export default function TaskListPage() {
     error,
   } = useQuery<TaskListData, Error>({
     queryKey: ['task', activeFilter],
-    queryFn: () => httpGet<TaskListData>(API_URL, activeFilter, 'items')
+    queryFn: () => httpGet<TaskListData>(API_EPS.TASKS.LIST, activeFilter, 'items')
   });
 
   const { items, total } = data;
@@ -40,7 +41,7 @@ export default function TaskListPage() {
       if (value) params.append(key, String(value));
     });
 
-    navigate(`/tasks/${id}?${params.toString()}`);
+    navigate(`${ROUTES.TASK.DETAIL(id)}?${params.toString()}`);
   };
 
   return (

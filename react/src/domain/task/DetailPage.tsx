@@ -2,6 +2,8 @@
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
+import { API_EPS } from '../../constant/config';
+import { ROUTES } from '../../constant/routes';
 import { httpGet } from '../../util/http';
 import type { TaskStatus, TaskMaster, TaskDetailData } from './schema';
 
@@ -11,7 +13,6 @@ export default function TaskDetailPage() {
   const [searchParams] = useSearchParams(); // 기존 목록 검색 파라미터 유지용
 
   // 데이터 조회 및 캐싱
-  const API_URL = `${import.meta.env.VITE_API_URL || ''}/api/v1/tasks`;
   const {
     data: detail,
     isLoading,
@@ -19,14 +20,15 @@ export default function TaskDetailPage() {
     error,
   } = useQuery<TaskDetailData, Error>({
     queryKey: ['task', id], // 'task' 식별자 + 개별 id 기반 캐시 키
-    queryFn: () => httpGet<TaskDetailData>(`${API_URL}/${encodeURIComponent(id!)}`, undefined, 'id'),
+    queryFn: () => httpGet<TaskDetailData>(API_EPS.TASKS.DETAIL(id!), undefined, 'id'),
+    
     enabled: !!id, // id 값이 존재할 때만 API 요청 진행
   });
 
   // 목록으로 돌아가기 (기존 검색 파라미터 복원)
   const handleBackToList = () => {
     const queryString = searchParams.toString();
-    navigate(`/tasks${queryString ? `?${queryString}` : ''}`);
+    navigate(`${ROUTES.TASK.LIST}${queryString ? `?${queryString}` : ''}`);
   };
 
   // 로딩 상태

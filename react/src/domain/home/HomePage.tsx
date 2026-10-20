@@ -1,6 +1,8 @@
 // react\src\domain\home\HomePage.tsx
 import { Link } from 'react-router-dom';
 
+import { ROUTES } from '../../constant/routes';
+
 export default function HomePage() {
   return (
     <section className="panel p-4 border rounded bg-white">
@@ -11,10 +13,10 @@ export default function HomePage() {
         </p>
       </div>
       <div className="d-flex gap-2">
-        <Link className="btn btn-primary" to="/task">
+        <Link className="btn btn-primary" to={ROUTES.TASK.LIST}>
           작업 목록 보기
         </Link>
-        <Link className="btn btn-outline-secondary" to="/chat">
+        <Link className="btn btn-outline-secondary" to={ROUTES.CHAT}>
           AI Chat 열기
         </Link>
       </div>

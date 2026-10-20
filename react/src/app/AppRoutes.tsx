@@ -1,6 +1,8 @@
 // react\src\app\AppRoutes.tsx
 import { Routes, Route } from 'react-router-dom';
+
 import MainLayout from '../component/layout/MainLayout';
+import { ROUTES } from '../constant/routes';
 
 // 페이지
 import HomePage from '../domain/home/HomePage';
@@ -14,17 +16,17 @@ export default function AppRoutes() {
     <Routes>
       <Route element={<MainLayout />}>
         {/* 홈페이지 */}
-        <Route path="/" element={<HomePage />} />
+        <Route path={ROUTES.HOME} element={<HomePage />} />
 
         {/* 게시판 */}
-        <Route path="/tasks" element={<TaskListPage />} />
-        <Route path="/tasks/:id" element={<TaskDetailPage />} />
+        <Route path={ROUTES.TASK.LIST} element={<TaskListPage />} />
+        <Route path={ROUTES.TASK.DETAIL()} element={<TaskDetailPage />} />
 
         {/* SSE */}
-        <Route path="/tasks/sse" element={<TaskSsePage />} />
+        <Route path={ROUTES.TASK.SSE} element={<TaskSsePage />} />
 
         {/* CHAT */}
-        <Route path="/chat" element={<ChatPage />} />
+        <Route path={ROUTES.CHAT} element={<ChatPage />} />
       </Route>
     </Routes>
   );

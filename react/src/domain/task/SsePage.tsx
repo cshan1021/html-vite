@@ -1,17 +1,17 @@
 // src/pages/TaskPage.tsx
+import { API_EPS } from '../../constant/config';
 import { useSse } from '../../hook/useSse';
 import type { TaskSseResponse } from './schema';
 
 export default function SsePage() {
-  // 공통 SSE 훅 적용 (disconnect 추가)
-  const API_URL = `${import.meta.env.VITE_API_URL || ''}/api/v1/tasks/sse`;
+  // 공통 SSE 훅 적용
   const {
     data: taskState,
     isConnected,
     errorMsg,
     disconnect,
   } = useSse<TaskSseResponse>({
-    url: API_URL,
+    url: API_EPS.TASKS.SSE,
     eventName: 'task_event',
     shouldClose: (res) => res.status === 'COMPLETED' || res.status === 'ERROR',
   });
