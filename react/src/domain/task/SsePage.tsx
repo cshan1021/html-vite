@@ -3,9 +3,14 @@ import { useSse } from '../../hook/useSse';
 import type { TaskSseResponse } from './schema';
 
 export default function SsePage() {
-  // 공통 SSE 훅 적용
+  // 공통 SSE 훅 적용 (disconnect 추가)
   const API_URL = `${import.meta.env.VITE_API_URL || ''}/api/v1/tasks/sse`;
-  const { data: taskState, isConnected, errorMsg } = useSse<TaskSseResponse>({
+  const {
+    data: taskState,
+    isConnected,
+    errorMsg,
+    disconnect,
+  } = useSse<TaskSseResponse>({
     url: API_URL,
     eventName: 'task_event',
     shouldClose: (res) => res.status === 'COMPLETED' || res.status === 'ERROR',
@@ -24,7 +29,7 @@ export default function SsePage() {
 
       {/* 작업 상태 패널 */}
       <div className="panel p-4">
-        {/* 상단 연결 상태 표시 */}
+        {/* 상단 연결 상태 표시 및 중지 버튼 */}
         <div className="d-flex align-items-center justify-content-between mb-3">
           <div className="d-flex align-items-center gap-2">
             <span
@@ -38,19 +43,32 @@ export default function SsePage() {
             </span>
           </div>
 
-          {status && (
-            <span
-              className={`badge fs-6 ${
-                status === 'COMPLETED'
-                  ? 'bg-success'
-                  : status === 'ERROR'
-                  ? 'bg-danger'
-                  : 'bg-primary'
-              }`}
-            >
-              {status}
-            </span>
-          )}
+          <div className="d-flex align-items-center gap-2">
+            {/* 작업 중지 버튼 */}
+            {isConnected && (
+              <button
+                type="button"
+                className="btn btn-outline-danger btn-sm"
+                onClick={disconnect}
+              >
+                작업 중지
+              </button>
+            )}
+
+            {status && (
+              <span
+                className={`badge fs-6 ${
+                  status === 'COMPLETED'
+                    ? 'bg-success'
+                    : status === 'ERROR'
+                    ? 'bg-danger'
+                    : 'bg-primary'
+                }`}
+              >
+                {status}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* 에러 메시지 출력 */}
@@ -65,7 +83,7 @@ export default function SsePage() {
           <div className="progress" style={{ height: '24px' }}>
             <div
               className={`progress-bar progress-bar-striped ${
-                status === 'PROGRESS' ? 'progress-bar-animated' : ''
+                status === 'PROGRESS' && isConnected ? 'progress-bar-animated' : ''
               } ${status === 'COMPLETED' ? 'bg-success' : 'bg-primary'}`}
               role="progressbar"
               style={{ width: `${progress}%` }}

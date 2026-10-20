@@ -1,5 +1,5 @@
 // react\src\hook\useSse.ts
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 
 interface UseSseOptions<T> {
   /** SSE 수신 URL */
@@ -19,26 +19,39 @@ export const useSse = <T>({
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // 1. EventSource 인스턴스를 수동 종료에서도 참조하기 위해 useRef 사용
+  const eventSourceRef = useRef<EventSource | null>(null);
+
+  // 2. 사용자가 수동으로 연결을 끊는 함수
+  const disconnect = useCallback(() => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+      setIsConnected(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!url) return;
 
-    // 1. URL 기반으로 EventSource 직접 생성
+    // 기존 연결이 있다면 정리
+    disconnect();
+
     const eventSource = new EventSource(url);
+    eventSourceRef.current = eventSource;
 
     eventSource.onopen = () => {
       setIsConnected(true);
       setErrorMsg(null);
     };
 
-    // 2. 이벤트 핸들러
     const handleEvent = (event: MessageEvent) => {
       try {
         const parsedData: T = JSON.parse(event.data);
         setData(parsedData);
 
         if (shouldClose && shouldClose(parsedData)) {
-          eventSource.close();
-          setIsConnected(false);
+          disconnect();
         }
       } catch (err) {
         console.error('SSE JSON 파싱 에러:', err);
@@ -51,22 +64,21 @@ export const useSse = <T>({
       eventSource.addEventListener(eventName, handleEvent);
     }
 
-    // 3. 에러 핸들러
     eventSource.onerror = (err) => {
       console.error('SSE 연결 오류:', err);
       setErrorMsg('서버 연결 중 오류가 발생했거나 연결이 종료되었습니다.');
-      setIsConnected(false);
-      eventSource.close();
+      disconnect();
     };
 
-    // 4. Cleanup (언마운트 및 url 변경 시에만 연결 해제)
+    // Cleanup
     return () => {
       if (eventName !== 'message') {
         eventSource.removeEventListener(eventName, handleEvent);
       }
-      eventSource.close();
+      disconnect();
     };
-  }, [url, eventName]); // url이 변경될 때만 재연결 실행
+  }, [url, eventName, disconnect]);
 
-  return { data, isConnected, errorMsg };
+  // 3. disconnect 함수를 반환 객체에 추가
+  return { data, isConnected, errorMsg, disconnect };
 };
