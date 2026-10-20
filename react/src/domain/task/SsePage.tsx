@@ -1,51 +1,15 @@
 // src/pages/TaskPage.tsx
-import { useEffect, useState } from 'react';
-
-import { createTaskEvent } from './api';
+import { useSse } from '../../hook/useSse';
 import type { TaskSseResponse } from './schema';
 
 export default function SsePage() {
-  const [taskState, setTaskState] = useState<TaskSseResponse | null>(null);
-  const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  useEffect(() => {
-    // SSE 연결 생성
-    const eventSource = createTaskEvent();
-
-    eventSource.onopen = () => {
-      setIsConnected(true);
-      setErrorMsg(null);
-    };
-
-    // 'event: task_event' 지정 커스텀 이벤트 수신
-    eventSource.addEventListener('task_event', (event: MessageEvent) => {
-      try {
-        const parsedData: TaskSseResponse = JSON.parse(event.data);
-        setTaskState(parsedData);
-
-        // 작업 완료 또는 에러 시 연결 종료
-        if (parsedData.status === 'COMPLETED' || parsedData.status === 'ERROR') {
-          eventSource.close();
-          setIsConnected(false);
-        }
-      } catch (err) {
-        console.error('SSE JSON 파싱 에러:', err);
-      }
-    });
-
-    eventSource.onerror = (err) => {
-      console.error('SSE 연결 오류:', err);
-      setErrorMsg('서버 연결 중 오류가 발생했거나 연결이 종료되었습니다.');
-      setIsConnected(false);
-      eventSource.close();
-    };
-
-    // 컴포넌트 언마운트 시 SSE 연결 해제
-    return () => {
-      eventSource.close();
-    };
-  }, []);
+  // 공통 SSE 훅 적용
+  const API_URL = `${import.meta.env.VITE_API_URL || ''}/api/v1/tasks/sse`;
+  const { data: taskState, isConnected, errorMsg } = useSse<TaskSseResponse>({
+    url: API_URL,
+    eventName: 'task_event',
+    shouldClose: (res) => res.status === 'COMPLETED' || res.status === 'ERROR',
+  });
 
   const progress = taskState?.data?.progress ?? 0;
   const status = taskState?.status;

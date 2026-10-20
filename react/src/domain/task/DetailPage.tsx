@@ -2,7 +2,7 @@
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
-import { fetchTaskDetail } from './api';
+import { httpGet } from '../../util/http';
 import type { TaskStatus, TaskMaster, TaskDetailData } from './schema';
 
 export default function TaskDetailPage() {
@@ -11,6 +11,7 @@ export default function TaskDetailPage() {
   const [searchParams] = useSearchParams(); // 기존 목록 검색 파라미터 유지용
 
   // 데이터 조회 및 캐싱
+  const API_URL = `${import.meta.env.VITE_API_URL || ''}/api/v1/tasks`;
   const {
     data: detail,
     isLoading,
@@ -18,7 +19,7 @@ export default function TaskDetailPage() {
     error,
   } = useQuery<TaskDetailData, Error>({
     queryKey: ['task', id], // 'task' 식별자 + 개별 id 기반 캐시 키
-    queryFn: () => fetchTaskDetail(id!),
+    queryFn: () => httpGet<TaskDetailData>(`${API_URL}/${encodeURIComponent(id!)}`, undefined, 'id'),
     enabled: !!id, // id 값이 존재할 때만 API 요청 진행
   });
 

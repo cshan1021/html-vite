@@ -1,10 +1,10 @@
 // react/src/pages/TaskListPage.tsx
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchFilter } from '../../hook/useSearchFilter';
 
+import { useSearchFilter } from '../../hook/useSearchFilter';
+import { httpGet } from '../../util/http';
 import { TASK_SEARCH_FILTER, type TaskListItem, type TaskListData } from './schema';
-import { fetchTaskList } from './api';
 
 export default function TaskListPage() {
   const navigate = useNavigate();
@@ -19,6 +19,7 @@ export default function TaskListPage() {
   } = useSearchFilter(TASK_SEARCH_FILTER);
 
   // 데이터 조회 및 캐싱
+  const API_URL = `${import.meta.env.VITE_API_URL || ''}/api/v1/tasks`;
   const {
     data = { items: [], total: 0, page: 1, limit: 10 },
     isLoading,
@@ -26,7 +27,7 @@ export default function TaskListPage() {
     error,
   } = useQuery<TaskListData, Error>({
     queryKey: ['task', activeFilter],
-    queryFn: () => fetchTaskList(activeFilter),
+    queryFn: () => httpGet<TaskListData>(API_URL, activeFilter, 'items')
   });
 
   const { items, total } = data;
