@@ -10,6 +10,7 @@ import TaskListPage from '../domain/task/ListPage';
 import TaskDetailPage from '../domain/task/DetailPage';
 import TaskSsePage from '../domain/task/SsePage';
 import ChatPage from '../domain/chat/ChatPage';
+import LoginPage from '../domain/auth/LoginPage';
 
 export default function AppRoutes() {
   return (
@@ -27,6 +28,9 @@ export default function AppRoutes() {
 
         {/* CHAT */}
         <Route path={ROUTES.CHAT} element={<ChatPage />} />
+
+        {/* 로그인 */}
+        <Route path={ROUTES.AUTH.LOGIN} element={<LoginPage />} />
       </Route>
     </Routes>
   );

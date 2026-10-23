@@ -1,8 +1,7 @@
-// react\src\domain\task\schema.ts
 import type { ApiResponse, ApiPagedData } from '../../schema/api';
 import type { SseResponse } from '../../schema/sse';
 
-// 검색 필터 정의 또는 확장
+// 검색 필터 정의
 export const TASK_SEARCH_FILTER = {
   keyword: '',
   status: '',
@@ -14,8 +13,8 @@ export const TASK_SEARCH_FILTER = {
 };
 export type TaskSearchFilterParams = typeof TASK_SEARCH_FILTER;
 
-// Task 목록 스키마
-export type TaskListItem = {
+// Task 목록 객체 스키마
+export interface TaskListItem {
   id?: string | number;
   task_id?: string;
   task_type?: string;
@@ -26,10 +25,10 @@ export type TaskListItem = {
   progress?: number;
 }
 export type TaskListData = ApiPagedData<TaskListItem>;
-export type TaskListResponse = ApiResponse<TaskListData> 
+export type TaskListResponse = ApiResponse<TaskListData>;
 
-// Task 상세 스키마
-export type TaskMaster = {
+// Task 상세 객체 스키마
+export interface TaskMaster {
   id?: string | number;
   task_id?: string;
   task_type?: string;
@@ -37,7 +36,8 @@ export type TaskMaster = {
   created_at?: string;
   updated_at?: string;
 }
-export type TaskStatus = {
+
+export interface TaskStatus {
   id?: string | number;
   task_id?: string;
   step?: string;
@@ -47,19 +47,20 @@ export type TaskStatus = {
   created_at?: string;
   updated_at?: string;
 }
-export type TaskDetailData = {
-  master?: TaskMaster
+
+export interface TaskDetailData {
+  master?: TaskMaster;
   statuses?: TaskStatus[];
 }
-export type TaskDetailResponse = ApiResponse<TaskDetailData> 
+export type TaskDetailResponse = ApiResponse<TaskDetailData>;
 
-// SSE 스키마
-export type TaskSseData = {
+// SSE 객체 스키마
+export interface TaskSseData {
   id?: string | number;
   step?: string;
   progress?: number;
   completed?: boolean;
   failed?: boolean;
   message?: string;
-};
+}
 export type TaskSseResponse = SseResponse<TaskSseData>;

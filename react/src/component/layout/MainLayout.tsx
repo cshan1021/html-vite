@@ -40,6 +40,10 @@ export default function MainLayout() {
               <i className="bi bi-chat-dots me-2"></i>
               <span>AI CHAT</span>
             </NavLink>
+            <NavLink to={ROUTES.AUTH.LOGIN} className={({ isActive }) => (isActive ? 'active' : '')}>
+              <i className="bi bi-chat-dots me-2"></i>
+              <span>LOGIN</span>
+            </NavLink>
           </nav>
         </aside>
 

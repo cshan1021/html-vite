@@ -1,4 +1,13 @@
-// react\src\util\http.ts
+// react/src/util/http.ts
+
+/**
+ * LocalStorage에서 access_token을 읽어와 Authorization 헤더 객체를 생성합니다.
+ */
+const getAuthHeaders = (): Record<string, string> => {
+  const token = localStorage.getItem('access_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 /**
  * 쿼리 파라미터 객체를 URLSearchParams 문자열로 변환합니다.
  */
@@ -17,21 +26,29 @@ export const buildQueryUrl = (baseUrl: string, paramsObj?: Record<string, any>):
 };
 
 /**
- * 공통 HTTP GET 요청 헬퍼 함수
- * @template T - 최종적으로 반환받고자 하는 데이터 타입
- * @param url - 요청할 API URL
- * @param params - 쿼리 스트링 파라미터 객체 (선택)
- * @param fallbackKey - ApiResponse 래퍼가 없을 때 데이터 유효성을 검증할 대표 키 (예: 'items', 'task_id')
+ * 공통 HTTP GET 요청 헬퍼 함수 (Authorization 헤더 자동 포함)
  */
 export const httpGet = async <T>(
   url: string,
   params?: Record<string, any>,
-  fallbackKey?: string
+  fallbackKey?: string,
+  customHeaders?: Record<string, string>
 ): Promise<T> => {
   const requestUrl = buildQueryUrl(url, params);
 
-  const res = await fetch(requestUrl);
+  const res = await fetch(requestUrl, {
+    method: 'GET',
+    headers: {
+      ...getAuthHeaders(),
+      ...customHeaders,
+    },
+  });
+
   if (!res.ok) {
+    if (res.status === 401) {
+      // 필요 시 토큰 만료 처리 (로그아웃 처리 또는 페이지 이동)
+      localStorage.removeItem('access_token');
+    }
     throw new Error(`HTTP error! status: ${res.status}`);
   }
 
@@ -56,26 +73,28 @@ export const httpGet = async <T>(
 };
 
 /**
- * 공통 HTTP POST 요청 헬퍼 함수
- * @template T 최종적으로 반환받고자 하는 데이터 타입
- * @param url 요청할 API URL
- * @param body 요청 Body 객체 (선택)
- * @param fallbackKey ApiResponse 래퍼가 없을 때 데이터 유효성을 검증할 대표 키 (선택)
+ * 공통 HTTP POST 요청 헬퍼 함수 (Authorization 헤더 자동 포함)
  */
 export const httpPost = async <T>(
   url: string,
   body?: Record<string, any>,
-  fallbackKey?: string
+  fallbackKey?: string,
+  customHeaders?: Record<string, string>
 ): Promise<T> => {
   const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+      ...customHeaders,
     },
     body: body ? JSON.stringify(body) : undefined,
   });
 
   if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('access_token');
+    }
     throw new Error(`HTTP error! status: ${res.status}`);
   }
 
@@ -100,20 +119,18 @@ export const httpPost = async <T>(
 };
 
 /**
- * multipart/form-data 전송용 POST 공통 헬퍼
+ * multipart/form-data 전송용 POST 공통 헬퍼 (Authorization 헤더 자동 포함)
  */
 export async function httpForm<T>(
   url: string,
   formData: FormData,
   customHeaders?: Record<string, string>
 ): Promise<T> {
-  // Authorization 등 공통 헤더가 있다면 조합
+  // Content-Type은 브라우저가 boundary와 함께 자동 설정하도록 제거한 상태로 Authorization만 병합
   const headers: Record<string, string> = {
+    ...getAuthHeaders(),
     ...customHeaders,
   };
-
-  // 중요: Content-Type은 명시하지 않습니다.
-  // 브라우저가 boundary를 포함하여 multipart/form-data로 자동으로 설정합니다.
 
   const response = await fetch(url, {
     method: 'POST',
@@ -122,8 +139,18 @@ export async function httpForm<T>(
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem('access_token');
+    }
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
-  return response.json();
+  const resp = await response.json();
+
+  // ApiResponse 래퍼 구조 처리
+  if (resp && typeof resp === 'object' && 'data' in resp && resp.data !== undefined) {
+    return resp.data as T;
+  }
+
+  return resp as T;
 }

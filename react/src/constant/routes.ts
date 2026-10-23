@@ -8,4 +8,7 @@ export const ROUTES = {
     SSE: '/tasks/sse'
   },
   CHAT: '/chat',
+  AUTH: {
+    LOGIN: '/auth/login',
+  },
 } as const;

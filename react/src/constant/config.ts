@@ -8,4 +8,7 @@ export const API_EPS = {
     DETAIL: (id: string | number) => `${API_URL}/api/v1/tasks/${encodeURIComponent(id)}`,
     SSE: `${API_URL}/api/v1/tasks/sse`,
   },
+  AUTH: {
+    LOGIN: `${API_URL}/auth/login`,
+  },
 } as const;
