@@ -1,16 +1,50 @@
 // react/src/util/http.ts
+import { STORAGE_KEYS } from '../constant/config';
 
 /**
- * LocalStorage에서 access_token을 읽어와 Authorization 헤더 객체를 생성합니다.
+ * 토큰 헬퍼 함수
  */
-const getAuthHeaders = (): Record<string, string> => {
-  const token = localStorage.getItem('access_token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
+// Access Token 개별 조회
+export const getAccessToken = (): string | null => {
+  return sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+};
+
+// 로그인 성공 시 인증 토큰 저장
+export const setAuthTokens = (accessToken: string, refreshToken?: string): void => {
+  sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+  if (refreshToken) {
+    sessionStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+  }
+};
+
+// 로그아웃 또는 토큰 만료 시 인증 토큰 전체 삭제
+export const clearAuthTokens = (): void => {
+  sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+  sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+  sessionStorage.removeItem(STORAGE_KEYS.USER_INFO);
+};
+
+// 사용자 정보 조회
+export const getUserInfo = <T>(): T | null => {
+  const userStr = sessionStorage.getItem(STORAGE_KEYS.USER_INFO);
+  if (!userStr) return null;
+  try {
+    return JSON.parse(userStr) as T;
+  } catch (e) {
+    console.error('Failed to parse stored user info:', e);
+    return null;
+  }
+};
+
+// 사용자 정보 저장
+export const setUserInfo = <T>(user: T): void => {
+  sessionStorage.setItem(STORAGE_KEYS.USER_INFO, JSON.stringify(user));
 };
 
 /**
- * 쿼리 파라미터 객체를 URLSearchParams 문자열로 변환합니다.
+ * 공통 HTTP 요청 헬퍼 함수
  */
+// 쿼리 파라미터 객체를 URLSearchParams 문자열로 변환합니다.
 export const buildQueryUrl = (baseUrl: string, paramsObj?: Record<string, any>): string => {
   if (!paramsObj) return baseUrl;
 
@@ -25,9 +59,13 @@ export const buildQueryUrl = (baseUrl: string, paramsObj?: Record<string, any>):
   return queryString ? `${baseUrl}?${queryString}` : baseUrl;
 };
 
-/**
- * 공통 HTTP GET 요청 헬퍼 함수 (Authorization 헤더 자동 포함)
- */
+// access_token을 읽어와 Authorization 헤더 객체를 생성합니다.
+const getAuthHeaders = (): Record<string, string> => {
+  const token = getAccessToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+// 공통 HTTP GET 요청 헬퍼 함수
 export const httpGet = async <T>(
   url: string,
   params?: Record<string, any>,
@@ -46,8 +84,7 @@ export const httpGet = async <T>(
 
   if (!res.ok) {
     if (res.status === 401) {
-      // 필요 시 토큰 만료 처리 (로그아웃 처리 또는 페이지 이동)
-      localStorage.removeItem('access_token');
+      clearAuthTokens();
     }
     throw new Error(`HTTP error! status: ${res.status}`);
   }
@@ -72,9 +109,7 @@ export const httpGet = async <T>(
   throw new Error('올바르지 않은 API 응답 형식입니다.');
 };
 
-/**
- * 공통 HTTP POST 요청 헬퍼 함수 (Authorization 헤더 자동 포함)
- */
+// 공통 HTTP POST 요청 헬퍼 함수
 export const httpPost = async <T>(
   url: string,
   body?: Record<string, any>,
@@ -93,7 +128,7 @@ export const httpPost = async <T>(
 
   if (!res.ok) {
     if (res.status === 401) {
-      localStorage.removeItem('access_token');
+      clearAuthTokens();
     }
     throw new Error(`HTTP error! status: ${res.status}`);
   }
@@ -118,15 +153,12 @@ export const httpPost = async <T>(
   throw new Error('올바르지 않은 API 응답 형식입니다.');
 };
 
-/**
- * multipart/form-data 전송용 POST 공통 헬퍼 (Authorization 헤더 자동 포함)
- */
+// 공통 HTTP  multipart/form-data 전송용 헬퍼 함수
 export async function httpForm<T>(
   url: string,
   formData: FormData,
   customHeaders?: Record<string, string>
 ): Promise<T> {
-  // Content-Type은 브라우저가 boundary와 함께 자동 설정하도록 제거한 상태로 Authorization만 병합
   const headers: Record<string, string> = {
     ...getAuthHeaders(),
     ...customHeaders,
@@ -140,7 +172,7 @@ export async function httpForm<T>(
 
   if (!response.ok) {
     if (response.status === 401) {
-      localStorage.removeItem('access_token');
+      clearAuthTokens();
     }
     throw new Error(`HTTP error! status: ${response.status}`);
   }

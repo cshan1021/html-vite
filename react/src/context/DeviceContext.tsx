@@ -1,3 +1,4 @@
+// react\src\context\DeviceContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface DeviceContextType {

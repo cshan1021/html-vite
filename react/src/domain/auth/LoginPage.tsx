@@ -1,13 +1,15 @@
+// react\src\domain\auth\LoginPage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { API_EPS } from '../../constant/config';
+import { useAuth } from '../../context/AuthContext';
 import { ROUTES } from '../../constant/routes';
-import { httpPost } from '../../util/http';
-import type { LoginRequest, LoginData } from './schema';
+import type { LoginRequest } from '../../schema/auth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  // AuthContext에서 login 함수 추출
+  const { login } = useAuth();
 
   // 폼 입력 상태
   const [formData, setFormData] = useState<LoginRequest>({
@@ -34,22 +36,11 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // httpPost 내부에서 백엔드의 ApiResponse<LoginData> 중 data 필드를 파싱하여 반환합니다.
-      const data = await httpPost<LoginData>(
-        API_EPS.AUTH.LOGIN,
-        formData
-      );
+      // AuthContext의 login 함수를 호출하여 API 통신, 토큰 및 유저 상태 저장을 한 번에 처리합니다.
+      await login(formData);
 
-      // 토큰 저장 (Local Storage)
-      if (data.access_token) {
-        localStorage.setItem('access_token', data.access_token);
-      }
-      if (data.refresh_token) {
-        localStorage.setItem('refresh_token', data.refresh_token);
-      }
-
-      // 로그인 성공 시 이동 (상수화된 라우트Path 활용)
-      navigate(ROUTES.TASK.LIST);
+      // 로그인 성공 시 이동
+      navigate(ROUTES.AUTH.PROTECTED);
     } catch (error: unknown) {
       console.error('Login Error:', error);
       const message =

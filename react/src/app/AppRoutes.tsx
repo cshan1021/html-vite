@@ -11,6 +11,7 @@ import TaskDetailPage from '../domain/task/DetailPage';
 import TaskSsePage from '../domain/task/SsePage';
 import ChatPage from '../domain/chat/ChatPage';
 import LoginPage from '../domain/auth/LoginPage';
+import ProtectedPage from '../domain/auth/ProtectedPage';
 
 export default function AppRoutes() {
   return (
@@ -31,6 +32,7 @@ export default function AppRoutes() {
 
         {/* 로그인 */}
         <Route path={ROUTES.AUTH.LOGIN} element={<LoginPage />} />
+        <Route path={ROUTES.AUTH.PROTECTED} element={<ProtectedPage />} />
       </Route>
     </Routes>
   );

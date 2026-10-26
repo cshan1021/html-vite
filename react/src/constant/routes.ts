@@ -10,5 +10,6 @@ export const ROUTES = {
   CHAT: '/chat',
   AUTH: {
     LOGIN: '/auth/login',
+    PROTECTED: '/auth/protected',
   },
 } as const;

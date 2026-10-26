@@ -3,8 +3,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import AppRoutes from './AppRoutes';
-import { AuthProvider } from './AuthContext';
-import { DeviceProvider } from './DeviceContext';
+import { AuthProvider } from '../context/AuthContext';
+import { DeviceProvider } from '../context/DeviceContext';
 
 const queryClient = new QueryClient();
 
