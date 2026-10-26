@@ -4,14 +4,12 @@ import type { UserInfo, LoginRequest, LoginData } from '../schema/auth';
 import { API_EPS } from '../constant/config';
 import {
   httpPost,
-  getAccessToken,
-  setAuthTokens,
-  getUserInfo,
-  setUserInfo,
+  setAccessToken,
   clearAuthTokens,
+  refreshAccessToken,
 } from '../util/http';
 
-// 1. Context에서 제공할 상태 및 액션 타입 정의
+// 1. Context 타입 정의
 interface AuthContextType {
   user: UserInfo | null;
   isAuthenticated: boolean;
@@ -20,27 +18,44 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
-// 2. Context 객체 생성
+// 2. Context 생성
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// 3. Provider 컴포넌트 구현
+// 3. Provider 구현
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // 초기 마운트 시 세션 정보 확인
+  // 초기 마운트(페이지 새로고침) 시 세션 자동 복구 (Silent Refresh)
   useEffect(() => {
-    const token = getAccessToken();
-    const storedUser = getUserInfo<UserInfo>();
+    const initAuth = async () => {
+      try {
+        // HttpOnly Cookie 기반 재발급 시도
+        const refreshResult = await refreshAccessToken();
 
-    if (token) {
-      setIsAuthenticated(true);
-      if (storedUser) {
-        setUser(storedUser);
+        if (refreshResult?.access_token) {
+          setIsAuthenticated(true);
+          // 백엔드 /auth/refresh 응답에 user 정보가 포함되어 내려온 경우 복구
+          if (refreshResult.user) {
+            setUser(refreshResult.user);
+          }
+        } else {
+          clearAuthTokens();
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error('Failed to restore auth session:', error);
+        clearAuthTokens();
+        setUser(null);
+        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    setIsLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   // 로그인 핸들러
@@ -48,13 +63,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const data = await httpPost<LoginData>(API_EPS.AUTH.LOGIN, credentials);
 
     if (data.access_token) {
-      setAuthTokens(data.access_token, data.refresh_token);
+      setAccessToken(data.access_token);
       setIsAuthenticated(true);
     }
 
     if (data.user) {
-      setUserInfo(data.user);
-      setUser(data.user);
+      setUser(data.user); // Context 메모리 State에 저정
     }
 
     return data;
@@ -63,6 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // 로그아웃 핸들러
   const logout = async (): Promise<void> => {
     try {
+      // 백엔드 로그아웃 API 호출 (HttpOnly Cookie 삭제용 Max-Age: 0 수신)
       await httpPost(API_EPS.AUTH.LOGOUT);
     } catch (error) {
       console.error('Logout API failed:', error);
@@ -88,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// 4. 안전한 Context 사용을 위한 Custom Hook
+// 4. Custom Hook
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {

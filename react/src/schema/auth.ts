@@ -26,3 +26,4 @@ export interface LoginData {
   user?: UserInfo;
 }
 export type LoginApiResponse = ApiResponse<LoginData>;
+export type RefreshApiResponse = ApiResponse<LoginData>;

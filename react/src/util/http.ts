@@ -1,50 +1,27 @@
-// react/src/util/http.ts
-import { STORAGE_KEYS } from '../constant/config';
+import { API_EPS } from '../constant/config';
+import { ROUTES } from '../constant/routes';
+import type { LoginData } from '../schema/auth';
 
 /**
- * 토큰 헬퍼 함수
+ * 인메모리 Access Token 관리 - HttpOnly Cookie
  */
-// Access Token 개별 조회
+let inMemoryAccessToken: string | null = null;
+
 export const getAccessToken = (): string | null => {
-  return sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+  return inMemoryAccessToken;
 };
 
-// 로그인 성공 시 인증 토큰 저장
-export const setAuthTokens = (accessToken: string, refreshToken?: string): void => {
-  sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-  if (refreshToken) {
-    sessionStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
-  }
+export const setAccessToken = (accessToken: string): void => {
+  inMemoryAccessToken = accessToken;
 };
 
-// 로그아웃 또는 토큰 만료 시 인증 토큰 전체 삭제
 export const clearAuthTokens = (): void => {
-  sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-  sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-  sessionStorage.removeItem(STORAGE_KEYS.USER_INFO);
-};
-
-// 사용자 정보 조회
-export const getUserInfo = <T>(): T | null => {
-  const userStr = sessionStorage.getItem(STORAGE_KEYS.USER_INFO);
-  if (!userStr) return null;
-  try {
-    return JSON.parse(userStr) as T;
-  } catch (e) {
-    console.error('Failed to parse stored user info:', e);
-    return null;
-  }
-};
-
-// 사용자 정보 저장
-export const setUserInfo = <T>(user: T): void => {
-  sessionStorage.setItem(STORAGE_KEYS.USER_INFO, JSON.stringify(user));
+  inMemoryAccessToken = null;
 };
 
 /**
- * 공통 HTTP 요청 헬퍼 함수
+ * 쿼리 파라미터 변환 헬퍼 함수
  */
-// 쿼리 파라미터 객체를 URLSearchParams 문자열로 변환합니다.
 export const buildQueryUrl = (baseUrl: string, paramsObj?: Record<string, any>): string => {
   if (!paramsObj) return baseUrl;
 
@@ -59,130 +36,193 @@ export const buildQueryUrl = (baseUrl: string, paramsObj?: Record<string, any>):
   return queryString ? `${baseUrl}?${queryString}` : baseUrl;
 };
 
-// access_token을 읽어와 Authorization 헤더 객체를 생성합니다.
 const getAuthHeaders = (): Record<string, string> => {
   const token = getAccessToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-// 공통 HTTP GET 요청 헬퍼 함수
+/**
+ * Access Token 만료 시 자동 재발급(Refresh) 함수
+ */
+let refreshPromise: Promise<LoginData | null> | null = null;
+
+export const refreshAccessToken = (): Promise<LoginData | null> => {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch(API_EPS.AUTH.REFRESH, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // HttpOnly Cookie 자동 전송
+      });
+
+      if (!res.ok) {
+        throw new Error('Refresh token expired or invalid');
+      }
+
+      const resp = await res.json();
+      // ApiResponse 구조인 경우 resp.data, 일반 반환일 경우 resp 추출
+      const responseData: LoginData = resp.data || resp;
+      const newAccessToken = responseData?.access_token;
+
+      if (newAccessToken) {
+        setAccessToken(newAccessToken);
+        return responseData;
+      }
+      return null;
+    } catch (error) {
+      clearAuthTokens();
+      return null;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+};
+
+/**
+ * 401 Unauthorized 감지 및 토큰 자동 재발급/재시도 공통 처리
+ */
+async function executeWithAuthRetry(
+  url: string,
+  fetchFn: () => Promise<Response>,
+  isRetry: boolean
+): Promise<Response> {
+  const res = await fetchFn();
+
+  // 401 발생 시 재발급 및 재시도 (로그인, 재발급 API 요청 제외)
+  if (
+    res.status === 401 &&
+    !isRetry &&
+    url !== API_EPS.AUTH.REFRESH &&
+    url !== API_EPS.AUTH.LOGIN
+  ) {
+    const refreshResult = await refreshAccessToken();
+    if (refreshResult?.access_token) {
+      // 새 토큰 수령 성공 시 1회 재시도 (isRetry = true)
+      return fetchFn();
+    } else {
+      clearAuthTokens();
+
+      const unauthorizedUrl = ROUTES?.ERROR?.UNAUTHORIZED || '/error/Unauthorized';
+      if (window.location.pathname !== unauthorizedUrl) {
+        window.location.href = unauthorizedUrl;
+      }
+      throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+    }
+  }
+
+  if (!res.ok) {
+    throw new Error(`HTTP error! status: ${res.status}`);
+  }
+
+  return res;
+}
+
+/**
+ * API 응답 JSON 구조 표준 파싱
+ */
+async function parseApiResponse<T>(res: Response, fallbackKey?: string): Promise<T> {
+  const resp = await res.json();
+
+  if (resp && typeof resp === 'object' && 'data' in resp && resp.data !== undefined) {
+    return resp.data as T;
+  }
+  if (fallbackKey && resp && typeof resp === 'object' && fallbackKey in resp) {
+    return resp as T;
+  }
+  if (resp && typeof resp === 'object') {
+    return resp as T;
+  }
+
+  throw new Error('올바르지 않은 API 응답 형식입니다.');
+}
+
+/**
+ * 공통 HTTP GET 요청
+ */
 export const httpGet = async <T>(
   url: string,
   params?: Record<string, any>,
   fallbackKey?: string,
-  customHeaders?: Record<string, string>
+  customHeaders?: Record<string, string>,
+  isRetry = false
 ): Promise<T> => {
   const requestUrl = buildQueryUrl(url, params);
 
-  const res = await fetch(requestUrl, {
-    method: 'GET',
-    headers: {
-      ...getAuthHeaders(),
-      ...customHeaders,
-    },
-  });
+  const res = await executeWithAuthRetry(
+    url,
+    () =>
+      fetch(requestUrl, {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          ...customHeaders,
+        },
+        credentials: 'include',
+      }),
+    isRetry
+  );
 
-  if (!res.ok) {
-    if (res.status === 401) {
-      clearAuthTokens();
-    }
-    throw new Error(`HTTP error! status: ${res.status}`);
-  }
-
-  const resp = await res.json();
-
-  // 1. ApiResponse { success, message, data: ... } 구조인 경우
-  if (resp && typeof resp === 'object' && 'data' in resp && resp.data !== undefined) {
-    return resp.data as T;
-  }
-
-  // 2. ApiResponse 래퍼 없이 바로 데이터 객체가 내려오는 경우 (Fallback)
-  if (fallbackKey && resp && typeof resp === 'object' && fallbackKey in resp) {
-    return resp as T;
-  }
-
-  // 3. fallbackKey를 지정하지 않은 경우 전체 객체 반환
-  if (!fallbackKey && resp && typeof resp === 'object') {
-    return resp as T;
-  }
-
-  throw new Error('올바르지 않은 API 응답 형식입니다.');
+  return parseApiResponse<T>(res, fallbackKey);
 };
 
-// 공통 HTTP POST 요청 헬퍼 함수
+/**
+ * 공통 HTTP POST 요청
+ */
 export const httpPost = async <T>(
   url: string,
   body?: Record<string, any>,
   fallbackKey?: string,
-  customHeaders?: Record<string, string>
+  customHeaders?: Record<string, string>,
+  isRetry = false
 ): Promise<T> => {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...getAuthHeaders(),
-      ...customHeaders,
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  const res = await executeWithAuthRetry(
+    url,
+    () =>
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders(),
+          ...customHeaders,
+        },
+        credentials: 'include',
+        body: body ? JSON.stringify(body) : undefined,
+      }),
+    isRetry
+  );
 
-  if (!res.ok) {
-    if (res.status === 401) {
-      clearAuthTokens();
-    }
-    throw new Error(`HTTP error! status: ${res.status}`);
-  }
-
-  const resp = await res.json();
-
-  // 1. ApiResponse { success, message, data: ... } 구조인 경우
-  if (resp && typeof resp === 'object' && 'data' in resp && resp.data !== undefined) {
-    return resp.data as T;
-  }
-
-  // 2. ApiResponse 래퍼 없이 바로 데이터 객체가 내려오는 경우 (Fallback)
-  if (fallbackKey && resp && typeof resp === 'object' && fallbackKey in resp) {
-    return resp as T;
-  }
-
-  // 3. fallbackKey를 지정하지 않은 경우 전체 객체 반환
-  if (!fallbackKey && resp && typeof resp === 'object') {
-    return resp as T;
-  }
-
-  throw new Error('올바르지 않은 API 응답 형식입니다.');
+  return parseApiResponse<T>(res, fallbackKey);
 };
 
-// 공통 HTTP  multipart/form-data 전송용 헬퍼 함수
+/**
+ * 공통 HTTP multipart/form-data 전송용 요청
+ */
 export async function httpForm<T>(
   url: string,
   formData: FormData,
-  customHeaders?: Record<string, string>
+  customHeaders?: Record<string, string>,
+  isRetry = false
 ): Promise<T> {
-  const headers: Record<string, string> = {
-    ...getAuthHeaders(),
-    ...customHeaders,
-  };
+  const res = await executeWithAuthRetry(
+    url,
+    () =>
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          ...customHeaders,
+        },
+        credentials: 'include',
+        body: formData,
+      }),
+    isRetry
+  );
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers,
-    body: formData,
-  });
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      clearAuthTokens();
-    }
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  const resp = await response.json();
-
-  // ApiResponse 래퍼 구조 처리
-  if (resp && typeof resp === 'object' && 'data' in resp && resp.data !== undefined) {
-    return resp.data as T;
-  }
-
-  return resp as T;
+  return parseApiResponse<T>(res);
 }
