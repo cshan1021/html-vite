@@ -1,20 +1,66 @@
-// src/pages/TaskPage.tsx
+// react\src\domain\task\SsePage.tsx
+import { useState, useCallback } from 'react';
 import { API_EPS } from '../../constant/config';
 import { useSse } from '../../hook/useSse';
 import type { TaskSseResponse } from './schema';
 
 export default function SsePage() {
-  // 공통 SSE 훅 적용
+  const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
+  const [isStarting, setIsStarting] = useState<boolean>(false);
+
+  // 1. 동적으로 구독 URL 생성 (taskId가 있을 때만 연결)
+  const sseUrl = currentTaskId ? `${API_EPS.TASKS.SSE}/${currentTaskId}` : '';
+
+  // 2. 공통 SSE 훅 연결
   const {
     data: taskState,
     isConnected,
     errorMsg,
     disconnect,
   } = useSse<TaskSseResponse>({
-    url: API_EPS.TASKS.SSE,
+    url: sseUrl,
+    // Axum SSE 기본 이벤트명인 'message' 적용 (생략 시 기본값 'message')
     eventName: 'task_event',
     shouldClose: (res) => res.status === 'COMPLETED' || res.status === 'ERROR',
   });
+
+  // 3. 작업 시작 (백엔드 sse_create API 호출)
+  const handleStartTask = async () => {
+    try {
+      setIsStarting(true);
+      const response = await fetch(API_EPS.TASKS.SSE, {
+        method: 'GET', // 또는 백엔드 라우터 설정에 맞춰 POST
+      });
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        setCurrentTaskId(result.data); // taskId 받아와서 SSE 연결 트리거
+      } else {
+        alert('작업 생성에 실패했습니다.');
+      }
+    } catch (err) {
+      console.error('Task 생성 오류:', err);
+      alert('서버 통신 중 오류가 발생했습니다.');
+    } finally {
+      setIsStarting(false);
+    }
+  };
+
+  // 4. 작업 취소 (백엔드 sse_cancel API 호출 및 연결 종료)
+  const handleCancelTask = useCallback(async () => {
+    if (!currentTaskId) return;
+
+    try {
+      // 백엔드로 취소 요청 전달
+      await fetch(`${API_EPS.TASKS.SSE}/cancel/${currentTaskId}`, {
+        method: 'GET', // 또는 DELETE/POST
+      });
+    } catch (err) {
+      console.error('Task 취소 오류:', err);
+    } finally {
+      disconnect(); // 클라이언트 SSE 연결 수동 종료
+    }
+  }, [currentTaskId, disconnect]);
 
   const progress = taskState?.data?.progress ?? 0;
   const status = taskState?.status;
@@ -29,7 +75,7 @@ export default function SsePage() {
 
       {/* 작업 상태 패널 */}
       <div className="panel p-4">
-        {/* 상단 연결 상태 표시 및 중지 버튼 */}
+        {/* 상단 컨트롤 영역: 작업 시작 / 연결 상태 및 취소 버튼 */}
         <div className="d-flex align-items-center justify-content-between mb-3">
           <div className="d-flex align-items-center gap-2">
             <span
@@ -39,19 +85,31 @@ export default function SsePage() {
               role="status"
             ></span>
             <span className="fw-semibold">
-              {isConnected ? '실시간 스트리밍 중...' : '연결 종료됨'}
+              {isConnected ? '실시간 스트리밍 중...' : '연결 대기/종료됨'}
             </span>
           </div>
 
           <div className="d-flex align-items-center gap-2">
-            {/* 작업 중지 버튼 */}
+            {/* 작업 시작 버튼 (연결되어 있지 않을 때 활성화) */}
+            {!isConnected && (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={handleStartTask}
+                disabled={isStarting}
+              >
+                {isStarting ? '생성 중...' : '새 작업 시작'}
+              </button>
+            )}
+
+            {/* 작업 중지/취소 버튼 */}
             {isConnected && (
               <button
                 type="button"
                 className="btn btn-outline-danger btn-sm"
-                onClick={disconnect}
+                onClick={handleCancelTask}
               >
-                작업 중지
+                작업 취소
               </button>
             )}
 
@@ -124,7 +182,7 @@ export default function SsePage() {
           </div>
         ) : (
           <div className="text-center py-5 text-muted">
-            이벤트를 수신하기 위해 기다리는 중입니다...
+            '새 작업 시작' 버튼을 눌러 실시간 이벤트를 수신하세요.
           </div>
         )}
       </div>
