@@ -1,7 +1,7 @@
 // react\src\context\AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { UserInfo, LoginRequest, LoginData } from '../schema/auth';
-import { ENDPOINTS } from '../constant/config';
+import { ENDPOINTS, STORAGE_KEYS } from '../constant/config';
 import {
   httpPost,
   setAccessToken,
@@ -32,7 +32,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initAuth = async () => {
       try {
         // HttpOnly Cookie 기반 재발급 시도
-        const refreshResult = await refreshAccessToken();
+        let refreshResult: LoginData | null = null;
+         if (localStorage.getItem(STORAGE_KEYS.LOGGED_IN) === 'true') {
+          refreshResult = await refreshAccessToken();
+        }
 
         if (refreshResult?.access_token) {
           setIsAuthenticated(true);

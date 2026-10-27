@@ -1,9 +1,10 @@
-import { ENDPOINTS } from '../constant/config';
+import { ENDPOINTS, STORAGE_KEYS } from '../constant/config';
 import { ROUTES } from '../constant/routes';
 import type { LoginData } from '../schema/auth';
 
 /**
  * 인메모리 Access Token 관리 - HttpOnly Cookie
+ * 필요없는 refresh 요청 방지 - localStorage.setItem(STORAGE_KEYS.LOGGED_IN, 'true');
  */
 let inMemoryAccessToken: string | null = null;
 
@@ -12,10 +13,12 @@ export const getAccessToken = (): string | null => {
 };
 
 export const setAccessToken = (accessToken: string): void => {
+  localStorage.setItem(STORAGE_KEYS.LOGGED_IN, 'true');
   inMemoryAccessToken = accessToken;
 };
 
 export const clearAuthTokens = (): void => {
+  localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
   inMemoryAccessToken = null;
 };
 
@@ -64,13 +67,12 @@ export const refreshAccessToken = (): Promise<LoginData | null> => {
       }
 
       const resp = await res.json();
-      // ApiResponse 구조인 경우 resp.data, 일반 반환일 경우 resp 추출
-      const responseData: LoginData = resp.data || resp;
-      const newAccessToken = responseData?.access_token;
+      const respData: LoginData = resp.data || resp;
+      const newAccessToken = respData?.access_token;
 
       if (newAccessToken) {
         setAccessToken(newAccessToken);
-        return responseData;
+        return respData;
       }
       return null;
     } catch (error) {
