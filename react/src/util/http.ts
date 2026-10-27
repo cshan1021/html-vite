@@ -1,4 +1,4 @@
-import { API_EPS } from '../constant/config';
+import { ENDPOINTS } from '../constant/config';
 import { ROUTES } from '../constant/routes';
 import type { LoginData } from '../schema/auth';
 
@@ -53,7 +53,7 @@ export const refreshAccessToken = (): Promise<LoginData | null> => {
 
   refreshPromise = (async () => {
     try {
-      const res = await fetch(API_EPS.AUTH.REFRESH, {
+      const res = await fetch(ENDPOINTS.AUTH.REFRESH, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // HttpOnly Cookie 자동 전송
@@ -98,8 +98,8 @@ async function executeWithAuthRetry(
   if (
     res.status === 401 &&
     !isRetry &&
-    url !== API_EPS.AUTH.REFRESH &&
-    url !== API_EPS.AUTH.LOGIN
+    url !== ENDPOINTS.AUTH.REFRESH &&
+    url !== ENDPOINTS.AUTH.LOGIN
   ) {
     const refreshResult = await refreshAccessToken();
     if (refreshResult?.access_token) {

@@ -40,7 +40,7 @@ npm install bootstrap bootstrap-icons
 
 # vue vite.config.js 수정 -> src 폴더 경로로 매핑
 
-# .env.development
+# .env
 # VITE_API_URL=http://localhost:8080
 
 # 실행

@@ -1,7 +1,7 @@
 // react\src\context\AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { UserInfo, LoginRequest, LoginData } from '../schema/auth';
-import { API_EPS } from '../constant/config';
+import { ENDPOINTS } from '../constant/config';
 import {
   httpPost,
   setAccessToken,
@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // 로그인 핸들러
   const login = async (credentials: LoginRequest): Promise<LoginData> => {
-    const data = await httpPost<LoginData>(API_EPS.AUTH.LOGIN, credentials);
+    const data = await httpPost<LoginData>(ENDPOINTS.AUTH.LOGIN, credentials);
 
     if (data.access_token) {
       setAccessToken(data.access_token);
@@ -78,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async (): Promise<void> => {
     try {
       // 백엔드 로그아웃 API 호출 (HttpOnly Cookie 삭제용 Max-Age: 0 수신)
-      await httpPost(API_EPS.AUTH.LOGOUT);
+      await httpPost(ENDPOINTS.AUTH.LOGOUT);
     } catch (error) {
       console.error('Logout API failed:', error);
     } finally {

@@ -1,6 +1,7 @@
 // react\src\domain\task\SsePage.tsx
 import { useState, useCallback } from 'react';
-import { API_EPS } from '../../constant/config';
+
+import { ENDPOINTS } from '../../constant/config';
 import { useSse } from '../../hook/useSse';
 import type { TaskSseResponse } from './schema';
 
@@ -9,7 +10,7 @@ export default function SsePage() {
   const [isStarting, setIsStarting] = useState<boolean>(false);
 
   // 1. 동적으로 구독 URL 생성 (taskId가 있을 때만 연결)
-  const sseUrl = currentTaskId ? `${API_EPS.TASKS.SSE}/${currentTaskId}` : '';
+  const sseUrl = currentTaskId ? `${ENDPOINTS.TASKS.SSE}/${currentTaskId}` : '';
 
   // 2. 공통 SSE 훅 연결
   const {
@@ -28,7 +29,7 @@ export default function SsePage() {
   const handleStartTask = async () => {
     try {
       setIsStarting(true);
-      const response = await fetch(API_EPS.TASKS.SSE, {
+      const response = await fetch(ENDPOINTS.TASKS.SSE, {
         method: 'GET', // 또는 백엔드 라우터 설정에 맞춰 POST
       });
       const result = await response.json();
@@ -52,7 +53,7 @@ export default function SsePage() {
 
     try {
       // 백엔드로 취소 요청 전달
-      await fetch(`${API_EPS.TASKS.SSE}/cancel/${currentTaskId}`, {
+      await fetch(`${ENDPOINTS.TASKS.SSE}/cancel/${currentTaskId}`, {
         method: 'GET', // 또는 DELETE/POST
       });
     } catch (err) {

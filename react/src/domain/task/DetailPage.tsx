@@ -2,7 +2,7 @@
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
-import { API_EPS } from '../../constant/config';
+import { ENDPOINTS } from '../../constant/config';
 import { ROUTES } from '../../constant/routes';
 import { httpGet } from '../../util/http';
 import type { TaskStatus, TaskMaster, TaskDetailData } from './schema';
@@ -20,7 +20,7 @@ export default function TaskDetailPage() {
     error,
   } = useQuery<TaskDetailData, Error>({
     queryKey: ['task', id], // 'task' 식별자 + 개별 id 기반 캐시 키
-    queryFn: () => httpGet<TaskDetailData>(API_EPS.TASKS.DETAIL(id!), undefined, 'id'),
+    queryFn: () => httpGet<TaskDetailData>(ENDPOINTS.TASKS.DETAIL(id!), undefined, 'id'),
     
     enabled: !!id, // id 값이 존재할 때만 API 요청 진행
   });

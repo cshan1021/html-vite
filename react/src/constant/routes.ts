@@ -13,6 +13,6 @@ export const ROUTES = {
     PROTECTED: '/auth/protected',
   },
   ERROR: {
-    UNAUTHORIZED: '/error/Unauthorized',
+    UNAUTHORIZED: '/error/unauthorized',
   },
 } as const;

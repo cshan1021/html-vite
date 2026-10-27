@@ -2,9 +2,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
-import { useAuth } from '../../context/AuthContext';
-import { API_EPS } from '../../constant/config';
+import { ENDPOINTS } from '../../constant/config';
 import { ROUTES } from '../../constant/routes';
+import { useAuth } from '../../context/AuthContext';
 import { httpGet } from '../../util/http';
 
 export default function ProtectedPage() {
@@ -19,7 +19,7 @@ export default function ProtectedPage() {
     error,
   } = useQuery<string, Error>({
     queryKey: ['protectedData'],
-    queryFn: () => httpGet<string>(API_EPS.AUTH.PROTECTED),
+    queryFn: () => httpGet<string>(ENDPOINTS.AUTH.PROTECTED),
   });
 
   // 로그아웃 핸들러

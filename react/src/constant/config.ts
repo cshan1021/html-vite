@@ -1,7 +1,7 @@
 // react\src\constant\config.ts
 // 엔드포인트 상수 정의
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-export const API_EPS = {
+export const ENDPOINTS = {
   TASKS: {
     LIST: `${API_URL}/api/v1/tasks`,
     DETAIL: (id: string | number) => `${API_URL}/api/v1/tasks/${encodeURIComponent(id)}`,

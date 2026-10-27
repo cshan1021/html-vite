@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
-import { API_EPS } from '../../constant/config';
+import { ENDPOINTS } from '../../constant/config';
 import { ROUTES } from '../../constant/routes';
 import { useSearchFilter } from '../../hook/useSearchFilter';
 import { httpGet } from '../../util/http';
@@ -28,7 +28,7 @@ export default function TaskListPage() {
     error,
   } = useQuery<TaskListData, Error>({
     queryKey: ['task', activeFilter],
-    queryFn: () => httpGet<TaskListData>(API_EPS.TASKS.LIST, activeFilter, 'items')
+    queryFn: () => httpGet<TaskListData>(ENDPOINTS.TASKS.LIST, activeFilter, 'items')
   });
 
   const { items, total } = data;
