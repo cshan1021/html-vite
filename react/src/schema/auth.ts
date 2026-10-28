@@ -17,6 +17,7 @@ export interface RefreshRequest {
   id: string;
   name?: string;
   email?: string;
+  role?: string;
 }
 export interface LoginData {
   access_token: string;
