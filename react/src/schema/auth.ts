@@ -3,7 +3,7 @@ import type { ApiResponse} from './api';
 
 // 로그인 요청
 export interface LoginRequest {
-  username: string;
+  id: string;
   password: string;
 }
 
