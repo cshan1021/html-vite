@@ -1,5 +1,5 @@
 // react/src/domain/auth/LoginPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 
@@ -9,7 +9,14 @@ import type { LoginRequest, LoginData } from '../../schema/auth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated, isLoading } = useAuth();
+
+  // 로그인된 상태라면 Protected 페이지로 리다이렉트
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate(ROUTES.AUTH.PROTECTED, { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   // 폼 입력 데이터 상태 관리
   const [formData, setFormData] = useState<LoginRequest>({
