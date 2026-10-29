@@ -16,7 +16,7 @@ export type TaskSearchFilterParams = typeof TASK_SEARCH_FILTER;
 // Task 목록 객체 스키마
 export interface TaskListItem {
   id?: string | number;
-  task_id?: string;
+  queue_id?: string;
   task_type?: string;
   data_key?: string;
   created_at?: string;
@@ -28,9 +28,9 @@ export type TaskListData = ApiPagedData<TaskListItem>;
 export type TaskListResponse = ApiResponse<TaskListData>;
 
 // Task 상세 객체 스키마
-export interface TaskMaster {
+export interface Task {
   id?: string | number;
-  task_id?: string;
+  queue_id?: string;
   task_type?: string;
   data_key?: string;
   created_at?: string;
@@ -39,7 +39,7 @@ export interface TaskMaster {
 
 export interface TaskStatus {
   id?: string | number;
-  task_id?: string;
+  task_id?: string | number;
   step?: string;
   status?: string;
   progress?: number;
@@ -49,7 +49,7 @@ export interface TaskStatus {
 }
 
 export interface TaskDetailData {
-  master?: TaskMaster;
+  task?: Task;
   statuses?: TaskStatus[];
 }
 export type TaskDetailResponse = ApiResponse<TaskDetailData>;

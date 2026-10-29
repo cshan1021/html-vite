@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ENDPOINTS } from '../../constant/config';
 import { ROUTES } from '../../constant/routes';
 import { httpGet } from '../../util/http';
-import type { TaskStatus, TaskMaster, TaskDetailData } from './schema';
+import type { Task, TaskStatus, TaskDetailData } from './schema';
 
 export default function TaskDetailPage() {
   const navigate = useNavigate();
@@ -44,7 +44,7 @@ export default function TaskDetailPage() {
   }
 
   // 에러 및 데이터 부재 처리
-  if (isError || !detail?.master) {
+  if (isError || !detail?.task) {
     return (
       <div className="alert alert-danger my-4" role="alert">
         {error?.message || '상세 정보를 찾을 수 없습니다.'}
@@ -57,7 +57,7 @@ export default function TaskDetailPage() {
     );
   }
 
-  const master: TaskMaster = detail.master;
+  const task: Task = detail.task;
   const statuses: TaskStatus[] = detail.statuses || [];
 
   return (
@@ -67,7 +67,7 @@ export default function TaskDetailPage() {
         <div>
           <h1>작업 상세</h1>
           <p className="text-muted mb-0">
-            {master.task_id} 작업의 기본 정보와 상태 이력을 확인합니다.
+            {task.queue_id} 작업의 기본 정보와 상태 이력을 확인합니다.
           </p>
         </div>
         <button className="btn btn-outline-secondary" onClick={handleBackToList}>
@@ -80,19 +80,19 @@ export default function TaskDetailPage() {
         <div className="row g-4">
           <div className="col-md-3">
             <div className="text-secondary small">작업 ID</div>
-            <div className="fw-semibold">{master.task_id}</div>
+            <div className="fw-semibold">{task.queue_id}</div>
           </div>
           <div className="col-md-3">
             <div className="text-secondary small">작업 유형</div>
-            <div>{master.task_type}</div>
+            <div>{task.task_type}</div>
           </div>
           <div className="col-md-3">
             <div className="text-secondary small">데이터 키</div>
-            <div>{master.data_key}</div>
+            <div>{task.data_key}</div>
           </div>
           <div className="col-md-3">
             <div className="text-secondary small">생성 일시</div>
-            <div>{master.created_at}</div>
+            <div>{task.created_at}</div>
           </div>
         </div>
       </section>
