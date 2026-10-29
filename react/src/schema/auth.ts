@@ -3,7 +3,7 @@ import type { ApiResponse} from './api';
 
 // 로그인 요청
 export interface LoginRequest {
-  id: string;
+  login_id: string;
   password: string;
 }
 
@@ -14,10 +14,10 @@ export interface RefreshRequest {
 
  // 로그인/토큰 응답 데이터
  export interface UserInfo {
-  id: string;
-  name?: string;
+  login_id: string;
+  user_name?: string;
   email?: string;
-  role?: string;
+  role_code?: string;
 }
 export interface LoginData {
   access_token: string;

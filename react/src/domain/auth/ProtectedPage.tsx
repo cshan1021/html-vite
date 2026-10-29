@@ -40,7 +40,7 @@ export default function ProtectedPage() {
 
         {user && (
           <p className="text-secondary small mb-4">
-            <strong>{user.name || user.id}</strong>님 환영합니다! ({user.email || '이메일 미등록'})
+            <strong>{user.user_name || user.login_id}</strong>님 환영합니다! ({user.email || '이메일 미등록'})
           </p>
         )}
 

@@ -20,7 +20,7 @@ export default function LoginPage() {
 
   // 폼 입력 데이터 상태 관리
   const [formData, setFormData] = useState<LoginRequest>({
-    id: '',
+    login_id: '',
     password: '',
   });
 
@@ -75,11 +75,11 @@ export default function LoginPage() {
             </label>
             <input
               type="text"
-              id="id"
-              name="id"
+              id="login_id"
+              name="login_id"
               className="form-control"
               placeholder="아이디를 입력하세요"
-              value={formData.id}
+              value={formData.login_id}
               onChange={handleChange}
               required
               autoComplete="id"
