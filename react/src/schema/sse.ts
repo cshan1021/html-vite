@@ -20,7 +20,7 @@ export type SseResponse<T> = {
 
 /* 예시)
 export type TaskPayload = {
-  taskId: string;
+  taskSid: string;
   percent: number;
 };
 export type TaskSseResponse = SseResponse<TaskPayload>;

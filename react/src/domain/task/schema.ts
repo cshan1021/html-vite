@@ -16,7 +16,7 @@ export type TaskSearchFilterParams = typeof TASK_SEARCH_FILTER;
 // Task 목록 객체 스키마
 export interface TaskListItem {
   id?: string | number;
-  queue_id?: string;
+  task_sid?: string;
   task_type?: string;
   data_key?: string;
   created_at?: string;
@@ -30,7 +30,7 @@ export type TaskListResponse = ApiResponse<TaskListData>;
 // Task 상세 객체 스키마
 export interface Task {
   id?: string | number;
-  queue_id?: string;
+  task_sid?: string;
   task_type?: string;
   data_key?: string;
   created_at?: string;

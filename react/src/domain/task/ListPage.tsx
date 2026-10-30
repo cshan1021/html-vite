@@ -35,7 +35,7 @@ export default function TaskListPage() {
 
   // 상세 페이지 이동
   const handleRowClick = (item: TaskListItem) => {
-    const id = item.id || item.task_id || '';
+    const id = item.id || '';
     const params = new URLSearchParams();
     Object.entries(activeFilter).forEach(([key, value]) => {
       if (value) params.append(key, String(value));
@@ -147,12 +147,12 @@ export default function TaskListPage() {
 
                   return (
                     <tr
-                      key={t.id || t.task_id || idx}
+                      key={t.id || idx}
                       role="button"
                       onClick={() => handleRowClick(t)}
                     >
                       <td>{(data.page - 1) * data.limit + idx + 1}</td>
-                      <td className="fw-semibold">{t.task_id || ''}</td>
+                      <td className="fw-semibold">{t.id || ''}</td>
                       <td>{t.task_type || ''}</td>
                       <td>{dataKey}</td>
                       <td>{status}</td>

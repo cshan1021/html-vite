@@ -6,11 +6,11 @@ import { useSse } from '../../hook/useSse';
 import type { TaskSseResponse } from './schema';
 
 export default function SsePage() {
-  const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
+  const [currentTaskSid, setCurrentTaskSid] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState<boolean>(false);
 
-  // 1. 동적으로 구독 URL 생성 (taskId가 있을 때만 연결)
-  const sseUrl = currentTaskId ? `${ENDPOINTS.TASKS.SSE}/${currentTaskId}` : '';
+  // 1. 동적으로 구독 URL 생성 (taskSid가 있을 때만 연결)
+  const sseUrl = currentTaskSid ? `${ENDPOINTS.TASKS.SSE}/${currentTaskSid}` : '';
 
   // 2. 공통 SSE 훅 연결
   const {
@@ -35,7 +35,7 @@ export default function SsePage() {
       const result = await response.json();
 
       if (result.success && result.data) {
-        setCurrentTaskId(result.data); // taskId 받아와서 SSE 연결 트리거
+        setCurrentTaskSid(result.data); // taskSid 받아와서 SSE 연결 트리거
       } else {
         alert('작업 생성에 실패했습니다.');
       }
@@ -49,11 +49,11 @@ export default function SsePage() {
 
   // 4. 작업 취소 (백엔드 sse_cancel API 호출 및 연결 종료)
   const handleCancelTask = useCallback(async () => {
-    if (!currentTaskId) return;
+    if (!currentTaskSid) return;
 
     try {
       // 백엔드로 취소 요청 전달
-      await fetch(`${ENDPOINTS.TASKS.SSE}/cancel/${currentTaskId}`, {
+      await fetch(`${ENDPOINTS.TASKS.SSE}/cancel/${currentTaskSid}`, {
         method: 'GET', // 또는 DELETE/POST
       });
     } catch (err) {
@@ -61,7 +61,7 @@ export default function SsePage() {
     } finally {
       disconnect(); // 클라이언트 SSE 연결 수동 종료
     }
-  }, [currentTaskId, disconnect]);
+  }, [currentTaskSid, disconnect]);
 
   const progress = taskState?.data?.progress ?? 0;
   const status = taskState?.status;

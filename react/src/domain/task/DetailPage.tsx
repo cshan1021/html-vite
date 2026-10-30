@@ -67,7 +67,7 @@ export default function TaskDetailPage() {
         <div>
           <h1>작업 상세</h1>
           <p className="text-muted mb-0">
-            {task.queue_id} 작업의 기본 정보와 상태 이력을 확인합니다.
+            {task.task_sid} 작업의 기본 정보와 상태 이력을 확인합니다.
           </p>
         </div>
         <button className="btn btn-outline-secondary" onClick={handleBackToList}>
@@ -80,7 +80,7 @@ export default function TaskDetailPage() {
         <div className="row g-4">
           <div className="col-md-3">
             <div className="text-secondary small">작업 ID</div>
-            <div className="fw-semibold">{task.queue_id}</div>
+            <div className="fw-semibold">{task.task_sid}</div>
           </div>
           <div className="col-md-3">
             <div className="text-secondary small">작업 유형</div>
