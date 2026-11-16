@@ -3,8 +3,9 @@ import { ROUTES } from '../constant/routes';
 import type { LoginData } from '../schema/auth';
 
 /**
- * 인메모리 Access Token 관리 - HttpOnly Cookie
- * 필요없는 refresh 요청 방지 - localStorage.setItem(STORAGE_KEYS.LOGGED_IN, 'true');
+ * Access Token: 인메모리
+ * Refresh Token: HttpOnly Cookie
+ * 불필요한 refresh 요청 방지 - localStorage.setItem(STORAGE_KEYS.LOGGED_IN, 'true');
  */
 let inMemoryAccessToken: string | null = null;
 
