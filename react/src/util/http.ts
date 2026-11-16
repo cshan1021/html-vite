@@ -1,5 +1,4 @@
-import { ENDPOINTS, STORAGE_KEYS } from '../constant/config';
-import { ROUTES } from '../constant/routes';
+import { ENDPOINTS, ROUTES, STORAGE_KEYS } from '../constant';
 import type { LoginData } from '../schema/auth';
 
 /**

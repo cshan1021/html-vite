@@ -1,7 +1,7 @@
 // react\src\component\layout\MainLayout.tsx
 import { Link, NavLink, Outlet } from 'react-router-dom';
 
-import { ROUTES } from '../../constant/routes';
+import { ROUTES } from '../../constant';
 
 // css import
 import 'bootstrap/dist/css/bootstrap.min.css';

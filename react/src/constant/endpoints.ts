@@ -1,4 +1,4 @@
-// react\src\constant\config.ts
+// react\src\constant\endpoints.ts
 // 엔드포인트 상수 정의
 export const API_URL = window.__APP_CONFIG__?.API_URL || 'http://localhost:8080';
 export const ENDPOINTS = {
@@ -13,12 +13,4 @@ export const ENDPOINTS = {
     LOGOUT: `${API_URL}/auth/logout`,
     PROTECTED: `${API_URL}/auth/protected`,
   },
-} as const;
-
-// 스토리지 키 상수 정의
-export const STORAGE_KEYS = {
-  ACCESS_TOKEN: 'access_token',
-  REFRESH_TOKEN: 'refresh_token',
-  USER_INFO: 'user_info',
-  LOGGED_IN: 'logged_in',
 } as const;

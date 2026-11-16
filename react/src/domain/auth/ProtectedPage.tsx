@@ -2,8 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
-import { ENDPOINTS } from '../../constant/config';
-import { ROUTES } from '../../constant/routes';
+import { ENDPOINTS, ROUTES } from '../../constant';
 import { useAuth } from '../../context/AuthContext';
 import { httpGet } from '../../util/http';
 

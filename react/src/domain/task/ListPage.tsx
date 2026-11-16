@@ -2,8 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
-import { ENDPOINTS } from '../../constant/config';
-import { ROUTES } from '../../constant/routes';
+import { ENDPOINTS, ROUTES } from '../../constant';
 import { useSearchFilter } from '../../hook/useSearchFilter';
 import { httpGet } from '../../util/http';
 import { TASK_SEARCH_FILTER, type TaskListItem, type TaskListData } from './schema';

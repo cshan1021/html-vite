@@ -1,7 +1,7 @@
 // react\src\domain\home\HomePage.tsx
 import { Link } from 'react-router-dom';
 
-import { ROUTES } from '../../constant/routes';
+import { ROUTES } from '../../constant';
 
 export default function HomePage() {
   return (

@@ -2,7 +2,7 @@
 import { Routes, Route } from 'react-router-dom';
 
 // 라우트 경로 정의
-import { ROUTES } from '../constant/routes';
+import { ROUTES } from '../constant';
 
 // 레이아웃
 import MainLayout from '../component/layout/MainLayout';

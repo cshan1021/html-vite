@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { ROUTES } from '../../constant/routes';
+import { ROUTES } from '../../constant';
 
 interface UnauthorizedProps {
   title?: string;

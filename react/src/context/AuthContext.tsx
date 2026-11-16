@@ -1,7 +1,7 @@
 // react\src\context\AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { UserInfo, LoginRequest, LoginData } from '../schema/auth';
-import { ENDPOINTS, STORAGE_KEYS } from '../constant/config';
+import { ENDPOINTS, STORAGE_KEYS } from '../constant';
 import {
   httpPost,
   setAccessToken,

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 
-import { ROUTES } from '../../constant/routes';
+import { ROUTES } from '../../constant';
 import { useAuth } from '../../context/AuthContext';
 import type { LoginRequest, LoginData } from '../../schema/auth';
 

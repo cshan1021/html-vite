@@ -1,7 +1,7 @@
 // react\src\domain\task\SsePage.tsx
 import { useState, useCallback } from 'react';
 
-import { ENDPOINTS } from '../../constant/config';
+import { ENDPOINTS } from '../../constant';
 import { useSse } from '../../hook/useSse';
 import type { TaskSseResponse } from './schema';
 
