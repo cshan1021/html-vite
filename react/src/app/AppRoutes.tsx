@@ -26,6 +26,8 @@ export default function AppRoutes() {
       <Route element={<MainLayout />}>
         {/* 홈페이지 */}
         <Route path={ROUTES.HOME} element={<HomePage />} />
+        <Route path="/index" element={<HomePage />} />
+        <Route path="/index.html" element={<HomePage />} />
 
         {/* 게시판 */}
         <Route path={ROUTES.TASK.LIST} element={<TaskListPage />} />
