@@ -38,9 +38,13 @@ npm install vue-router@4 pinia
 npm install @tanstack/vue-query
 npm install bootstrap bootstrap-icons
 
-# vue vite.config.js 수정 -> src 폴더 경로로 매핑
+# vite.config.ts
+# src 폴더 경로로 매핑
 
-# .env
+# public/config.js - 공용 환경
+# vite-env.d.ts - 타입선언
+
+# .env -  개별 환경
 # VITE_API_URL=http://localhost:8080
 
 # 실행
